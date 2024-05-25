@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 // register
 const register = async (req: Request, res: Response) => {
-  const { email, password, name, avatar, description } = req.body;
+  const { email, password, name } = req.body;
 
   if (!email || !password) {
     return res
@@ -34,8 +34,6 @@ const register = async (req: Request, res: Response) => {
         email,
         password: hashedPassword,
         name,
-        avatar,
-        description,
       },
     });
 
@@ -462,6 +460,34 @@ const updateEmail = async (req: Request, res: Response) => {
   }
 };
 
+// get user info
+const getUserInfo = async (req: Request, res: Response) => {
+  const userId = req.body.user?.id;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found!" });
+    }
+
+    // exclude password
+    user.password = "";
+
+    return res.json(user);
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
 export {
   register,
   getUserById,
@@ -473,4 +499,5 @@ export {
   updatePassword,
   updateProfile,
   updateEmail,
+  getUserInfo,
 };
