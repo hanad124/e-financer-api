@@ -13,17 +13,19 @@ import {
   getUserInfo,
 } from "../controllers";
 
+import { isAuthenticated, isOwner } from "../middlewares/authMiddleware";
+
 const router = Router();
 
-router.get("/users/:id", getUserById);
+router.get("/users/:id", isAuthenticated, isOwner, getUserById);
 router.post("/auth/register", register);
 router.post("/auth/login", login);
 router.post("/auth/verify-email-link", verifyEmailLink);
 router.get("/auth/verifyemail/:token", verifyEmail);
-router.get("/auth/user-info", getUserInfo);
+router.get("/auth/user-info", isAuthenticated, isOwner, getUserInfo);
 router.post("/auth/send-password-reset-link", sendPasswordResetLink);
 router.post("/auth/reset-password", resetPassword);
-router.post("/auth/update-password", updatePassword);
-router.post("/auth/update-email", updateEmail);
+router.post("/auth/update-password", isAuthenticated, isOwner, updatePassword);
+router.post("/auth/update-email", isAuthenticated, isOwner, updateEmail);
 
 export { router };

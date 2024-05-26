@@ -123,6 +123,13 @@ const getUserById = async (req: Request, res: Response) => {
       where: {
         id: id,
       },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatar: true,
+        description: true,
+      },
     });
 
     if (!user) {

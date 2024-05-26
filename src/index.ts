@@ -30,7 +30,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 // connect to the database
 connectToDB();
 
-// prefix all routes with /api
 app.use("/api", router);
 
 app.listen(port, () => {
