@@ -23,7 +23,6 @@ const sendEmail = async ({
       },
     });
     const salt = await bcrypt.genSalt(10);
-    console.log("user: ", user);
     let encryptedTokenMain = await bcrypt.hash(user.id.toString(), salt);
     let encryptedToken = "";
 
@@ -72,7 +71,7 @@ const sendEmail = async ({
         <div style="text-align: center">
           <a
             href="
-                        http://localhost:3000/verifyemail/${encryptedToken}
+                        http://localhost:5173/verifyemail/${encryptedToken}
                       "
             style="
               display: inline-block;

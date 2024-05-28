@@ -21,7 +21,7 @@ router.get("/users/:id", isAuthenticated, isOwner, getUserById);
 router.post("/auth/register", register);
 router.post("/auth/login", login);
 router.post("/auth/verify-email-link", verifyEmailLink);
-router.get("/auth/verifyemail/:token", verifyEmail);
+router.post("/auth/verifyemail", verifyEmail);
 router.get("/auth/user-info", isAuthenticated, isOwner, getUserInfo);
 router.post("/auth/send-password-reset-link", sendPasswordResetLink);
 router.post("/auth/reset-password", resetPassword);

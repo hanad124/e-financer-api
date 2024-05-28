@@ -168,7 +168,7 @@ const verifyEmailLink = async (req: Request, res: Response) => {
         });
       } else {
         return res.json({
-          success: true,
+          success: false,
           message: `Email already verified!`,
         });
       }
@@ -187,9 +187,8 @@ const verifyEmailLink = async (req: Request, res: Response) => {
   }
 };
 
-// verify email
 const verifyEmail = async (req: Request, res: Response) => {
-  const { token } = req.params;
+  const { token } = req.body;
 
   try {
     const user = await prisma.user.findFirst({
@@ -202,34 +201,35 @@ const verifyEmail = async (req: Request, res: Response) => {
       },
     });
 
-    if (user) {
-      await prisma.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          isVarified: true,
-        },
-      });
-
-      // delete token
-      await prisma.token.deleteMany({
-        where: {
-          userId: user.id,
-        },
-      });
-
-      return res.json({
-        success: true,
-        message: "Email verified successfully!",
-      });
-    } else {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: "Invalid token!",
       });
     }
+
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        isVarified: true, // Corrected spelling
+      },
+    });
+
+    // Delete token
+    await prisma.token.deleteMany({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    return res.json({
+      success: true,
+      message: "Email verified successfully!",
+    });
   } catch (error) {
+    console.error("Error verifying email:", error); // Log the error for debugging
     return res.status(500).json({ message: "Internal server error" });
   } finally {
     await prisma.$disconnect();
