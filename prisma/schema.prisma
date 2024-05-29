@@ -9,18 +9,21 @@ datasource db {
 
 // user model
 model User {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  email       String   @unique
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  email       String  @unique
   name        String?
   password    String
-  isVarified  Boolean  @default(false)
-  avatar      String?  @default("https://avatars.githubusercontent.com/u/77287775?v=4")
+  isVarified  Boolean @default(false)
+  avatar      String? @default("https://avatars.githubusercontent.com/u/77287775?v=4")
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // relation
-  tokens Token[]
+  tokens       Token[]
+  transactions Transaction[]
+  Category     Category[]
 }
 
 // token model
@@ -33,4 +36,36 @@ model Token {
 
   // relation
   user User @relation(fields: [userId], references: [id])
+}
+
+// transaction model
+model Transaction {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  title  String
+  amount Float
+  type   String
+
+  categoryId String   @db.ObjectId
+  userId     String   @db.ObjectId
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // relation
+  user     User     @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+}
+
+// category model
+model Category {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique
+  color     String   @default("#34eb6e")
+  icon      String
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relation
+  transactions Transaction[]
+  user         User          @relation(fields: [userId], references: [id])
 }
