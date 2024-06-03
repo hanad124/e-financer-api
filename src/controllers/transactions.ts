@@ -54,7 +54,7 @@ export const updateTransaction = async (req: Request, res: Response) => {
     }
 
     // update transaction
-    await prisma.transactions.update({
+    const data = await prisma.transactions.update({
       where: { id: id, userId: user },
       data: {
         title,
@@ -65,10 +65,12 @@ export const updateTransaction = async (req: Request, res: Response) => {
       },
     });
 
+    console.log("data: ", data);
+
     return res.json({
       succuess: true,
       message: "Transaction updated successfully",
-      transaction,
+      transaction: data,
     });
   } catch (error) {
     return res.status(500).json({
