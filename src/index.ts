@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import path from "path";
 import { connectToDB } from "./config/database";
-import { router } from "./routes";
+import mainRouter from "./routes/mainRouter";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import compression from "compression";
@@ -43,7 +43,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 // connect to the database
 connectToDB();
 
-app.use("/api", router);
+app.use("/api", mainRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

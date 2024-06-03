@@ -15,17 +15,17 @@ import {
 
 import { isAuthenticated, isOwner } from "../middlewares/authMiddleware";
 
-const router = Router();
+const authRouter = Router();
 
-router.get("/users/:id", isAuthenticated, isOwner, getUserById);
-router.post("/auth/register", register);
-router.post("/auth/login", login);
-router.post("/auth/verify-email-link", verifyEmailLink);
-router.post("/auth/verifyemail", verifyEmail);
-router.get("/auth/user-info", isAuthenticated, isOwner, getUserInfo);
-router.post("/auth/send-password-reset-link", sendPasswordResetLink);
-router.post("/auth/reset-password", resetPassword);
-router.post("/auth/update-password", isAuthenticated, isOwner, updatePassword);
-router.post("/auth/update-email", isAuthenticated, isOwner, updateEmail);
+authRouter.get("/users/:id", isAuthenticated, isOwner, getUserById);
+authRouter.post("/register", register);
+authRouter.post("/login", login);
+authRouter.post("/verify-email-link", verifyEmailLink);
+authRouter.post("/verifyemail", verifyEmail);
+authRouter.get("/user-info", isAuthenticated, isOwner, getUserInfo);
+authRouter.post("/send-password-reset-link", sendPasswordResetLink);
+authRouter.post("/reset-password", resetPassword);
+authRouter.post("/update-password", isAuthenticated, isOwner, updatePassword);
+authRouter.post("/auth/update-email", isAuthenticated, isOwner, updateEmail);
 
-export { router };
+export { authRouter };

@@ -1,3 +1,3 @@
-// export * from "./auth";
-export * from "./category";
-//
+// index.ts
+export { authRouter } from "./auth";
+export { categoryRouter } from "./category";

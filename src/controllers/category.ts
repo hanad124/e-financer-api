@@ -28,7 +28,11 @@ export const createCategory = async (req: Request, res: Response) => {
       category,
     });
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({
+      error: "Internal Server Error",
+      success: false,
+      message: "Category creation failed",
+    });
   } finally {
     await prisma.$disconnect();
   }
@@ -40,9 +44,26 @@ export const updateCategory = async (req: Request, res: Response) => {
   const { name, color, icon, userId } = req.body;
 
   try {
-    const category = await prisma.category.update({
+    // find category
+    const category = await prisma.category.findFirst({
       where: { id: id, userId },
-      data: { name, color, icon },
+    });
+
+    if (!category) {
+      return res.status(400).json({
+        message: "Category not found",
+        success: false,
+      });
+    }
+
+    // update category
+    await prisma.category.update({
+      where: { id: id, userId },
+      data: {
+        name,
+        color,
+        icon,
+      },
     });
 
     return res.json({
@@ -63,11 +84,21 @@ export const deleteCategory = async (req: Request, res: Response) => {
   const { userId } = req.body;
 
   try {
+    // find category
+    const category = await prisma.category.findFirst({
+      where: { id: id, userId },
+    });
+
+    if (!category) {
+      return res.status(400).json({
+        message: "Category not found",
+        success: false,
+      });
+    }
+
+    // delete category
     await prisma.category.delete({
-      where: {
-        id: id,
-        userId,
-      },
+      where: { id: id, userId },
     });
 
     return res.json({

@@ -10,12 +10,12 @@ import {
 
 import { isAuthenticated } from "../middlewares/authMiddleware";
 
-const router = Router();
+const categoryRouter = Router();
 
-router.post("/category", isAuthenticated, createCategory);
-router.patch("/category/:id", isAuthenticated, updateCategory);
-router.delete("/category/:id", isAuthenticated, deleteCategory);
-router.get("/categories", isAuthenticated, getCategories);
-router.get("/category/:id", isAuthenticated, getCategoryById);
+categoryRouter.post("/", isAuthenticated, createCategory);
+categoryRouter.patch("/:id", isAuthenticated, updateCategory);
+categoryRouter.delete("/:id", isAuthenticated, deleteCategory);
+categoryRouter.get("/", isAuthenticated, getCategories);
+categoryRouter.get("/:id", isAuthenticated, getCategoryById);
 
-export { router };
+export { categoryRouter };

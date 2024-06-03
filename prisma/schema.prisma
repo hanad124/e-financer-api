@@ -22,7 +22,7 @@ model User {
 
   // relation
   tokens       Token[]
-  transactions Transaction[]
+  transactions Transactions[]
   Category     Category[]
 }
 
@@ -39,11 +39,12 @@ model Token {
 }
 
 // transaction model
-model Transaction {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  title  String
-  amount Float
-  type   String
+model Transactions {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  amount      Float
+  type        String
 
   categoryId String   @db.ObjectId
   userId     String   @db.ObjectId
@@ -52,7 +53,7 @@ model Transaction {
 
   // relation
   user     User     @relation(fields: [userId], references: [id])
-  category Category @relation(fields: [categoryId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 }
 
 // category model
@@ -66,6 +67,6 @@ model Category {
   updatedAt DateTime @updatedAt
 
   // relation
-  transactions Transaction[]
-  user         User          @relation(fields: [userId], references: [id])
+  transactions Transactions[]
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
