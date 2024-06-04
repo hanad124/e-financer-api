@@ -89,12 +89,16 @@ const login = async (req: Request, res: Response) => {
             expiresIn: "7d",
           }
         );
+        // exclude password
+        user.password = "";
 
         return res.json({
           success: true,
           message: "Login successful",
-          token,
-          user: user,
+          user: {
+            ...user,
+            token,
+          },
         });
       } else {
         return res
