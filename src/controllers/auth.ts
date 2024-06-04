@@ -86,7 +86,7 @@ const login = async (req: Request, res: Response) => {
           { id: user.id },
           process.env.JWT_SECRET as string,
           {
-            expiresIn: "1d",
+            expiresIn: "never",
           }
         );
 
