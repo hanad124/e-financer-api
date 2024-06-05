@@ -254,7 +254,7 @@ export const deleteCategoryIcon = async (req: Request, res: Response) => {
 
   try {
     // find category icon
-    // 
+    //
     const icon = await prisma.categoryIcon.findFirst({
       where: { id: id },
     });
