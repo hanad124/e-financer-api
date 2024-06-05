@@ -7,6 +7,8 @@ const prisma = new PrismaClient();
 export const createTransaction = async (req: Request, res: Response) => {
   const { title, description, amount, type, category, user } = req.body;
 
+  console.log("req.body: ", req.body);
+
   try {
     const transaction = await prisma.transactions.create({
       data: {
@@ -124,6 +126,7 @@ export const deleteTransaction = async (req: Request, res: Response) => {
 // get all transactions
 export const getTransactions = async (req: Request, res: Response) => {
   const { user } = req.body;
+  console.log("user: ", user);
 
   try {
     const transactions = await prisma.transactions.findMany({
