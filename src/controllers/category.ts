@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 // create category
 export const createCategory = async (req: Request, res: Response) => {
-  const { name, userId } = req.body;
+  const { name, icon, userId } = req.body;
 
   try {
     const existingCategory = await prisma.category.findFirst({
@@ -19,7 +19,7 @@ export const createCategory = async (req: Request, res: Response) => {
     }
 
     const category = await prisma.category.create({
-      data: { name, userId: userId },
+      data: { name, iconId: icon, userId: userId },
     });
 
     return res.json({
@@ -41,7 +41,7 @@ export const createCategory = async (req: Request, res: Response) => {
 // update category
 export const updateCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, userId } = req.body;
+  const { name, icon, userId } = req.body;
 
   try {
     // find category
@@ -61,6 +61,7 @@ export const updateCategory = async (req: Request, res: Response) => {
       where: { id: id, userId },
       data: {
         name,
+        iconId: icon,
       },
     });
 
@@ -177,7 +178,7 @@ export const getCategoryById = async (req: Request, res: Response) => {
 
 // create category icon
 export const createCategoryIcon = async (req: Request, res: Response) => {
-  const { name, icon, category } = req.body;
+  const { name, icon } = req.body;
 
   try {
     const existingIcon = await prisma.icon.findFirst({
@@ -191,7 +192,7 @@ export const createCategoryIcon = async (req: Request, res: Response) => {
     }
 
     const categoryIcon = await prisma.icon.create({
-      data: { name, icon, categoryId: category },
+      data: { name, icon },
     });
 
     return res.json({
@@ -212,7 +213,7 @@ export const createCategoryIcon = async (req: Request, res: Response) => {
 
 // get all category icons
 export const getCategoryIcons = async (req: Request, res: Response) => {
-  console.log(req.body);
+  console.log(req.body)
   try {
     const icons = await prisma.icon.findMany();
 
