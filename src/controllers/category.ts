@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 // create category
 export const createCategory = async (req: Request, res: Response) => {
-  const { name, color, icon, userId } = req.body;
+  const { name, icon, userId } = req.body;
 
   try {
     const existingCategory = await prisma.category.findFirst({
@@ -19,7 +19,7 @@ export const createCategory = async (req: Request, res: Response) => {
     }
 
     const category = await prisma.category.create({
-      data: { name, color, iconId: icon, userId: userId },
+      data: { name, iconId: icon, userId: userId },
     });
 
     return res.json({
@@ -41,7 +41,7 @@ export const createCategory = async (req: Request, res: Response) => {
 // update category
 export const updateCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, color, icon, userId } = req.body;
+  const { name, icon, userId } = req.body;
 
   try {
     // find category
@@ -61,7 +61,6 @@ export const updateCategory = async (req: Request, res: Response) => {
       where: { id: id, userId },
       data: {
         name,
-        color,
         iconId: icon,
       },
     });
@@ -259,8 +258,6 @@ export const deleteCategoryIcon = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    // find category icon
-    //
     const icon = await prisma.icon.findFirst({
       where: { id: id },
     });
@@ -272,7 +269,6 @@ export const deleteCategoryIcon = async (req: Request, res: Response) => {
       });
     }
 
-    // delete category icon
     await prisma.icon.delete({
       where: { id: id },
     });

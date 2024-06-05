@@ -57,12 +57,10 @@ model Transactions {
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 }
 
-// category model
 model Category {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String   @unique
-  // color     String   @default("#34eb6e")
-  iconId    String   @default("https://cdn-icons-png.flaticon.com/512/2920/2920320.png") @db.ObjectId
+  iconId    String   @db.ObjectId
   userId    String   @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -73,7 +71,6 @@ model Category {
   categoryIcon Icon?          @relation(fields: [iconId], references: [id])
 }
 
-// category icon
 model Icon {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String   @unique
