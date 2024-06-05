@@ -5,34 +5,20 @@ const prisma = new PrismaClient();
 
 // create category
 export const createCategory = async (req: Request, res: Response) => {
-  const { name, icon, userId } = req.body;
+  const { name, iconId, userId } = req.body;
 
   try {
-    const existingCategory = await prisma.category.findFirst({
-      where: { name, userId },
-    });
-
-    if (existingCategory) {
-      return res
-        .status(400)
-        .json({ message: "Category already exists", success: false });
-    }
-
     const category = await prisma.category.create({
-      data: { name, iconId: icon, userId: userId },
+      data: {
+        name,
+        iconId, // Correct field name based on schema
+        userId,
+      },
     });
 
-    return res.json({
-      succuess: true,
-      message: "Category created successfully",
-      category,
-    });
+    return res.json({ success: true, category });
   } catch (error) {
-    return res.status(500).json({
-      error: "Internal Server Error",
-      success: false,
-      message: "Category creation failed",
-    });
+    return res.status(500).json({ error: "Internal Server Error" });
   } finally {
     await prisma.$disconnect();
   }
@@ -41,35 +27,19 @@ export const createCategory = async (req: Request, res: Response) => {
 // update category
 export const updateCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, icon, userId } = req.body;
+  const { name, iconId, userId } = req.body;
 
   try {
-    // find category
-    const category = await prisma.category.findFirst({
-      where: { id: id, userId },
-    });
-
-    if (!category) {
-      return res.status(400).json({
-        message: "Category not found",
-        success: false,
-      });
-    }
-
-    // update category
-    await prisma.category.update({
-      where: { id: id, userId },
+    const category = await prisma.category.update({
+      where: { id },
       data: {
         name,
-        iconId: icon,
+        iconId, // Correct field name based on schema
+        userId,
       },
     });
 
-    return res.json({
-      succuess: true,
-      message: "Category updated successfully",
-      category,
-    });
+    return res.json({ success: true, category });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   } finally {
@@ -77,7 +47,6 @@ export const updateCategory = async (req: Request, res: Response) => {
   }
 };
 
-// delete category
 export const deleteCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { userId } = req.body;
@@ -125,7 +94,7 @@ export const getCategories = async (req: Request, res: Response) => {
     const categories = await prisma.category.findMany({
       where: { userId: userId },
       include: {
-        categoryIcon: true,
+        categoryIcon: true, // Correct relation name based on schema
       },
     });
 
@@ -158,7 +127,7 @@ export const getCategoryById = async (req: Request, res: Response) => {
         userId,
       },
       include: {
-        categoryIcon: true,
+        categoryIcon: true, // Correct relation name based on schema
       },
     });
 
