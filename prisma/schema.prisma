@@ -73,7 +73,7 @@ model Category {
   categoryIcon CategoryIcon?  @relation(fields: [icon], references: [id])
 }
 
-// category icons
+// category icon
 model CategoryIcon {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String   @unique

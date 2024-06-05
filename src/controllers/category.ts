@@ -155,7 +155,7 @@ export const getCategoryById = async (req: Request, res: Response) => {
   try {
     const category = await prisma.category.findFirst({
       where: {
-        id: id,
+        id,
         userId,
       },
       include: {
@@ -163,7 +163,13 @@ export const getCategoryById = async (req: Request, res: Response) => {
       },
     });
 
-    return res.json({ succuess: true, category });
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
+    }
+
+    return res.json({ success: true, category });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   } finally {
@@ -229,7 +235,7 @@ export const getCategoryIcons = async (req: Request, res: Response) => {
   }
 };
 
-// get category by id
+// get category icon by id
 export const getCategoryIcon = async (req: Request, res: Response) => {
   const { id } = req.params;
 
