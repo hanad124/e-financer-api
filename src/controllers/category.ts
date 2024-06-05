@@ -126,7 +126,7 @@ export const getCategories = async (req: Request, res: Response) => {
     const categories = await prisma.category.findMany({
       where: { userId: userId },
       include: {
-        categoryIcon: true,
+        // categoryIcon: true,
       },
     });
 
@@ -159,7 +159,7 @@ export const getCategoryById = async (req: Request, res: Response) => {
         userId,
       },
       include: {
-        categoryIcon: true,
+        // categoryIcon: true,
       },
     });
 
@@ -177,113 +177,113 @@ export const getCategoryById = async (req: Request, res: Response) => {
   }
 };
 
-// create category icon
-export const createCategoryIcon = async (req: Request, res: Response) => {
-  const { name, icon } = req.body;
+// // create category icon
+// export const createCategoryIcon = async (req: Request, res: Response) => {
+//   const { name, icon } = req.body;
 
-  try {
-    const existingIcon = await prisma.categoryIcon.findFirst({
-      where: { name },
-    });
+//   try {
+//     const existingIcon = await prisma.categoryIcon.findFirst({
+//       where: { name },
+//     });
 
-    if (existingIcon) {
-      return res
-        .status(400)
-        .json({ message: "Icon already exists", success: false });
-    }
+//     if (existingIcon) {
+//       return res
+//         .status(400)
+//         .json({ message: "Icon already exists", success: false });
+//     }
 
-    const categoryIcon = await prisma.categoryIcon.create({
-      data: { name, icon },
-    });
+//     const categoryIcon = await prisma.categoryIcon.create({
+//       data: { name, icon },
+//     });
 
-    return res.json({
-      succuess: true,
-      message: "Icon created successfully",
-      categoryIcon,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      error: "Internal Server Error",
-      success: false,
-      message: "Icon creation failed",
-    });
-  } finally {
-    await prisma.$disconnect();
-  }
-};
+//     return res.json({
+//       succuess: true,
+//       message: "Icon created successfully",
+//       categoryIcon,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       error: "Internal Server Error",
+//       success: false,
+//       message: "Icon creation failed",
+//     });
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// };
 
-// get all category icons
-export const getCategoryIcons = async (req: Request, res: Response) => {
-  console.log(req.body);
-  try {
-    const icons = await prisma.categoryIcon.findMany();
+// // get all category icons
+// export const getCategoryIcons = async (req: Request, res: Response) => {
+//   console.log(req.body);
+//   try {
+//     const icons = await prisma.categoryIcon.findMany();
 
-    if (icons.length === 0) {
-      return res.json({ success: true, message: "No icons found" });
-    }
+//     if (icons.length === 0) {
+//       return res.json({ success: true, message: "No icons found" });
+//     }
 
-    return res.json({
-      success: true,
-      icons,
-      message: "Icons fetched successfully!",
-    });
-  } catch (error) {
-    console.error("Error fetching icons:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await prisma.$disconnect();
-  }
-};
+//     return res.json({
+//       success: true,
+//       icons,
+//       message: "Icons fetched successfully!",
+//     });
+//   } catch (error) {
+//     console.error("Error fetching icons:", error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// };
 
-// get category icon by id
-export const getCategoryIcon = async (req: Request, res: Response) => {
-  const { id } = req.params;
+// // get category icon by id
+// export const getCategoryIcon = async (req: Request, res: Response) => {
+//   const { id } = req.params;
 
-  try {
-    const icon = await prisma.categoryIcon.findFirst({
-      where: {
-        id: id,
-      },
-    });
+//   try {
+//     const icon = await prisma.categoryIcon.findFirst({
+//       where: {
+//         id: id,
+//       },
+//     });
 
-    return res.json({ succuess: true, icon });
-  } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await prisma.$disconnect();
-  }
-};
+//     return res.json({ succuess: true, icon });
+//   } catch (error) {
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// };
 
-// delete category icon
-export const deleteCategoryIcon = async (req: Request, res: Response) => {
-  const { id } = req.params;
+// // delete category icon
+// export const deleteCategoryIcon = async (req: Request, res: Response) => {
+//   const { id } = req.params;
 
-  try {
-    // find category icon
-    //
-    const icon = await prisma.categoryIcon.findFirst({
-      where: { id: id },
-    });
+//   try {
+//     // find category icon
+//     //
+//     const icon = await prisma.categoryIcon.findFirst({
+//       where: { id: id },
+//     });
 
-    if (!icon) {
-      return res.status(400).json({
-        message: "Icon not found",
-        success: false,
-      });
-    }
+//     if (!icon) {
+//       return res.status(400).json({
+//         message: "Icon not found",
+//         success: false,
+//       });
+//     }
 
-    // delete category icon
-    await prisma.categoryIcon.delete({
-      where: { id: id },
-    });
+//     // delete category icon
+//     await prisma.categoryIcon.delete({
+//       where: { id: id },
+//     });
 
-    return res.json({
-      succuess: true,
-      message: "Icon deleted successfully",
-    });
-  } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    await prisma.$disconnect();
-  }
-};
+//     return res.json({
+//       succuess: true,
+//       message: "Icon deleted successfully",
+//     });
+//   } catch (error) {
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// };
