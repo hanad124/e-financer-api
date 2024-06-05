@@ -196,7 +196,7 @@ export const createCategoryIcon = async (req: Request, res: Response) => {
     });
 
     return res.json({
-      succuess: true,
+      success: true,
       message: "Icon created successfully",
       categoryIcon,
     });
@@ -245,7 +245,7 @@ export const getCategoryIcon = async (req: Request, res: Response) => {
       },
     });
 
-    return res.json({ succuess: true, icon });
+    return res.json({ success: true, icon });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   } finally {
@@ -274,7 +274,7 @@ export const deleteCategoryIcon = async (req: Request, res: Response) => {
     });
 
     return res.json({
-      succuess: true,
+      success: true,
       message: "Icon deleted successfully",
     });
   } catch (error) {
