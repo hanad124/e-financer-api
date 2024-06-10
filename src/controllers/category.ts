@@ -5,11 +5,11 @@ const prisma = new PrismaClient();
 
 // create category
 export const createCategory = async (req: Request, res: Response) => {
-  const { name, icon, userId } = req.body;
+  const { name, icon, user } = req.body;
 
   try {
     const existingCategory = await prisma.category.findFirst({
-      where: { name, userId },
+      where: { name, userId: user },
     });
 
     if (existingCategory) {
@@ -19,7 +19,7 @@ export const createCategory = async (req: Request, res: Response) => {
     }
 
     const category = await prisma.category.create({
-      data: { name, iconId: icon, userId: userId },
+      data: { name, iconId: icon, userId: user },
     });
 
     return res.json({
@@ -41,12 +41,12 @@ export const createCategory = async (req: Request, res: Response) => {
 // update category
 export const updateCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, icon, userId } = req.body;
+  const { name, icon, user } = req.body;
 
   try {
     // find category
     const category = await prisma.category.findFirst({
-      where: { id: id, userId },
+      where: { id: id, userId: user },
     });
 
     if (!category) {
@@ -58,7 +58,7 @@ export const updateCategory = async (req: Request, res: Response) => {
 
     // update category
     await prisma.category.update({
-      where: { id: id, userId },
+      where: { id: id, userId: user },
       data: {
         name,
         iconId: icon,
@@ -80,12 +80,12 @@ export const updateCategory = async (req: Request, res: Response) => {
 // delete category
 export const deleteCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { userId } = req.body;
+  const { user } = req.body;
 
   try {
     // find category
     const category = await prisma.category.findFirst({
-      where: { id: id, userId },
+      where: { id: id, userId: user },
     });
 
     if (!category) {
@@ -97,7 +97,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
 
     // delete category
     await prisma.category.delete({
-      where: { id: id, userId },
+      where: { id: id, userId: user },
     });
 
     return res.json({
@@ -113,17 +113,17 @@ export const deleteCategory = async (req: Request, res: Response) => {
 
 // get all categories
 export const getCategories = async (req: Request, res: Response) => {
-  const { userId } = req.body;
+  const { user } = req.body;
 
-  if (!userId) {
+  if (!user) {
     return res
       .status(400)
-      .json({ success: false, message: "userId is required" });
+      .json({ success: false, message: "user is required" });
   }
 
   try {
     const categories = await prisma.category.findMany({
-      where: { userId: userId },
+      where: { userId: user },
       include: {
         icons: true, // Correct relation name
       },
@@ -149,13 +149,13 @@ export const getCategories = async (req: Request, res: Response) => {
 // get category by id
 export const getCategoryById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { userId } = req.body;
+  const { user } = req.body;
 
   try {
     const category = await prisma.category.findFirst({
       where: {
         id,
-        userId,
+        userId: user,
       },
       include: {
         icons: true, // Correct relation name
@@ -213,7 +213,7 @@ export const createCategoryIcon = async (req: Request, res: Response) => {
 
 // get all category icons
 export const getCategoryIcons = async (req: Request, res: Response) => {
-  console.log(req.body)
+  console.log(req.body);
   try {
     const icons = await prisma.icon.findMany();
 

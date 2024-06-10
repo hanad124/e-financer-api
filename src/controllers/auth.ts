@@ -396,7 +396,7 @@ const updatePassword = async (req: Request, res: Response) => {
 // update profile
 const updateProfile = async (req: Request, res: Response) => {
   const { name, avatar, description } = req.body;
-  const userId = req.body.user?.id;
+  const userId = req.body.user;
 
   try {
     const user = await prisma.user.findUnique({
@@ -474,12 +474,19 @@ const updateEmail = async (req: Request, res: Response) => {
 
 // get user info
 const getUserInfo = async (req: Request, res: Response) => {
-  const userId = req.body.user?.id;
+  const userid = req.body.user;
 
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id: userId,
+        id: userid,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatar: true,
+        description: true,
       },
     });
 
@@ -488,9 +495,6 @@ const getUserInfo = async (req: Request, res: Response) => {
         .status(404)
         .json({ success: false, message: "User not found!" });
     }
-
-    // exclude password
-    user.password = "";
 
     return res.json(user);
   } catch (error) {

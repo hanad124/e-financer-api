@@ -8,6 +8,8 @@ const isOwner = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const currentUserId = req.body.userid as string | undefined;
 
+    console.log("currentUserId", currentUserId);
+
     if (!currentUserId) {
       console.log("no currentUserId");
       return res.sendStatus(403);
