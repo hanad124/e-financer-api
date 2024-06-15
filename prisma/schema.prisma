@@ -131,7 +131,7 @@ enum TransactionType {
   EXPENSE
 }
 
-enum GoalType {
+  enum GoalType {
   INCOME
   EXPENSE
   SAVINGS

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient, GoalType } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -144,21 +144,21 @@ export const trackGoalProgress = async (req: Request, res: Response) => {
 
     let totalAmount = 0;
 
-    if (goal.goalType === GoalType.INCOME) {
+    if (goal.goalType === "INCOME") {
       const incomeResult = await prisma.transactions.aggregate({
         _sum: { amount: true },
         where: { userId: user, type: "INCOME" },
       });
 
       totalAmount = incomeResult._sum.amount || 0;
-    } else if (goal.goalType === GoalType.EXPENSE) {
+    } else if (goal.goalType === "EXPENSE") {
       const expenseResult = await prisma.transactions.aggregate({
         _sum: { amount: true },
         where: { userId: user, type: "EXPENSE" },
       });
 
       totalAmount = expenseResult._sum.amount || 0;
-    } else if (goal.goalType === GoalType.SAVINGS) {
+    } else if (goal.goalType === "SAVINGS") {
       const incomeResult = await prisma.transactions.aggregate({
         _sum: { amount: true },
         where: { userId: user, type: "INCOME" },
