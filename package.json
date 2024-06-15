@@ -5,7 +5,7 @@
   "main": "./src/index.ts",
   "scripts": {
     "prisma:generate": "npx prisma generate",
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "start": "node ./dist/index.js",
     "dev": "nodemon ./src/index.ts",
     "postinstall": "yarn build"
