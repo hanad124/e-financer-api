@@ -1,0 +1,126 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  id String [pk]
+  email String [unique, not null]
+  name String
+  password String [not null]
+  isVarified Boolean [not null, default: false]
+  avatar String [default: 'https://avatars.githubusercontent.com/u/77287775?v=4']
+  description String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  tokens Token [not null]
+  transactions Transactions [not null]
+  Category Category [not null]
+  Budget Budget [not null]
+  Goal Goal [not null]
+}
+
+Table Token {
+  id String [pk]
+  token String [unique, not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  user User [not null]
+}
+
+Table Transactions {
+  id String [pk]
+  title String [not null]
+  description String [not null]
+  amount Float [not null]
+  type TransactionType [not null]
+  categoryId String [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  user User [not null]
+  category Category [not null]
+  Budget Budget
+  budgetId String
+}
+
+Table Category {
+  id String [pk]
+  name String [unique, not null]
+  iconId String [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  transactions Transactions [not null]
+  user User [not null]
+  icons Icon
+}
+
+Table Icon {
+  id String [pk]
+  name String [unique, not null]
+  icon String [not null, default: 'https://cdn-icons-png.flaticon.com/512/2920/2920320.png']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  category Category [not null]
+}
+
+Table Budget {
+  id String [pk]
+  name String [not null]
+  amount Float [not null]
+  startDate DateTime [not null]
+  endDate DateTime [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  user User [not null]
+  transactions Transactions [not null]
+
+  indexes {
+    (name, userId) [unique]
+  }
+}
+
+Table Goal {
+  id String [pk]
+  name String [not null]
+  amount Float [not null]
+  targetDate DateTime [not null]
+  goalType GoalType [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  user User [not null]
+
+  indexes {
+    (name, userId) [unique]
+  }
+}
+
+Enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+Enum GoalType {
+  INCOME
+  EXPENSE
+  SAVINGS
+}
+
+Ref: Token.userId > User.id
+
+Ref: Transactions.userId > User.id
+
+Ref: Transactions.categoryId > Category.id [delete: Cascade]
+
+Ref: Transactions.budgetId > Budget.id
+
+Ref: Category.userId > User.id [delete: Cascade]
+
+Ref: Category.iconId > Icon.id
+
+Ref: Budget.userId > User.id [delete: Cascade]
+
+Ref: Goal.userId > User.id [delete: Cascade]

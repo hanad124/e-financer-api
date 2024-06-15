@@ -23,7 +23,7 @@ export const createCategory = async (req: Request, res: Response) => {
     });
 
     return res.json({
-      succuess: true,
+      success: true,
       message: "Category created successfully",
       category,
     });
@@ -66,7 +66,7 @@ export const updateCategory = async (req: Request, res: Response) => {
     });
 
     return res.json({
-      succuess: true,
+      success: true,
       message: "Category updated successfully",
       category,
     });
@@ -101,7 +101,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
     });
 
     return res.json({
-      succuess: true,
+      success: true,
       message: "Category deleted successfully",
     });
   } catch (error) {

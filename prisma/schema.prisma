@@ -1,3 +1,7 @@
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-1.1.x"]
@@ -25,7 +29,7 @@ model User {
   tokens       Token[]
   transactions Transactions[]
   Category     Category[]
-  // Budget       Budget[]
+  Budget       Budget[]
   Goal         Goal[]
 }
 
@@ -58,7 +62,8 @@ model Transactions {
   user     User     @relation(fields: [userId], references: [id])
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-
+  Budget   Budget? @relation(fields: [budgetId], references: [id])
+  budgetId String? @db.ObjectId
 }
 
 model Category {
@@ -88,46 +93,43 @@ model Icon {
   // @@map("icons")
 }
 
-// model Budget {
-//   id           String     @id @default(auto()) @map("_id") @db.ObjectId
-//   name         String
-//   amount       Float
-//   startDate    DateTime
-//   endDate      DateTime
-//   userId       String     @db.ObjectId
-//   createdAt    DateTime   @default(now())
-//   updatedAt    DateTime   @updatedAt
-
-//   // relations
-//   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-//   transactions Transactions[]
-
-//   @@unique([name, userId])  // A user can't have duplicate budget names
-// }
-
-
-model Goal {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  amount       Float
-  targetDate   DateTime
-  goalType     GoalType
-  userId       String     @db.ObjectId
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+model Budget {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  amount    Float
+  startDate DateTime
+  endDate   DateTime
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // relations
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transactions[]
 
-  @@unique([name, userId])  // A user can't have duplicate goal names
+  @@unique([name, userId]) // A user can't have duplicate budget names
 }
 
+model Goal {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  amount     Float
+  targetDate DateTime
+  goalType   GoalType
+  userId     String   @db.ObjectId
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([name, userId]) // A user can't have duplicate goal names
+}
 
 enum TransactionType {
   INCOME
   EXPENSE
 }
-
 
 enum GoalType {
   INCOME
