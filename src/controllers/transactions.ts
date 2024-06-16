@@ -1,14 +1,19 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
 // create transaction
 export const createTransaction = async (req: Request, res: Response) => {
-  const { title, description, amount, type, category, user } = req.body;
+  const { title, description, amount, type, category } = req.body;
 
-  console.log("req.body: ", req.body);
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   try {
     const transaction = await prisma.transactions.create({
       data: {
@@ -17,7 +22,7 @@ export const createTransaction = async (req: Request, res: Response) => {
         amount,
         type,
         categoryId: category,
-        userId: user,
+        userId: userid,
       },
     });
 
@@ -40,12 +45,19 @@ export const createTransaction = async (req: Request, res: Response) => {
 // update transaction
 export const updateTransaction = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { title, description, amount, type, category, user } = req.body;
+  const { title, description, amount, type, category } = req.body;
+
+  const token = req.header("authorization")?.split(" ")[1];
+
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
 
   try {
     // find transaction
     const transaction = await prisma.transactions.findFirst({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
     });
 
     if (!transaction) {
@@ -57,7 +69,7 @@ export const updateTransaction = async (req: Request, res: Response) => {
 
     // update transaction
     const data = await prisma.transactions.update({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
       data: {
         title,
         description,
@@ -88,12 +100,16 @@ export const updateTransaction = async (req: Request, res: Response) => {
 // delete transaction
 export const deleteTransaction = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { user } = req.body;
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   try {
     // find transaction
     const transaction = await prisma.transactions.findFirst({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
     });
 
     if (!transaction) {
@@ -105,7 +121,7 @@ export const deleteTransaction = async (req: Request, res: Response) => {
 
     // delete transaction
     await prisma.transactions.delete({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
     });
 
     return res.json({
@@ -125,12 +141,15 @@ export const deleteTransaction = async (req: Request, res: Response) => {
 
 // get all transactions
 export const getTransactions = async (req: Request, res: Response) => {
-  const { user } = req.body;
-  console.log("user: ", user);
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   try {
     const transactions = await prisma.transactions.findMany({
-      where: { userId: user },
+      where: { userId: userid },
       include: {
         category: true,
       },
@@ -155,11 +174,15 @@ export const getTransactions = async (req: Request, res: Response) => {
 // get transaction by id
 export const getTransaction = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { user } = req.body;
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   try {
     const transaction = await prisma.transactions.findFirst({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
       include: {
         category: true,
       },
@@ -193,11 +216,18 @@ export const getTransactionsByCategory = async (
   req: Request,
   res: Response
 ) => {
-  const { category, user } = req.body;
+  const { category } = req.body;
+
+  const token = req.header("authorization")?.split(" ")[1];
+
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
 
   try {
     const transactions = await prisma.transactions.findMany({
-      where: { categoryId: category, userId: user },
+      where: { categoryId: category, userId: userid },
       include: {
         category: true,
       },

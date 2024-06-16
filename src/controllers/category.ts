@@ -1,15 +1,23 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
 // create category
 export const createCategory = async (req: Request, res: Response) => {
-  const { name, icon, user } = req.body;
+  const { name, icon } = req.body;
+
+  const token = req.header("authorization")?.split(" ")[1];
+
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
 
   try {
     const existingCategory = await prisma.category.findFirst({
-      where: { name, userId: user },
+      where: { name, userId: userid },
     });
 
     if (existingCategory) {
@@ -19,7 +27,7 @@ export const createCategory = async (req: Request, res: Response) => {
     }
 
     const category = await prisma.category.create({
-      data: { name, iconId: icon, userId: user },
+      data: { name, iconId: icon, userId: userid },
     });
 
     return res.json({
@@ -41,12 +49,19 @@ export const createCategory = async (req: Request, res: Response) => {
 // update category
 export const updateCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, icon, user } = req.body;
+  const { name, icon } = req.body;
+
+  const token = req.header("authorization")?.split(" ")[1];
+
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
 
   try {
     // find category
     const category = await prisma.category.findFirst({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
     });
 
     if (!category) {
@@ -58,7 +73,7 @@ export const updateCategory = async (req: Request, res: Response) => {
 
     // update category
     await prisma.category.update({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
       data: {
         name,
         iconId: icon,
@@ -80,12 +95,16 @@ export const updateCategory = async (req: Request, res: Response) => {
 // delete category
 export const deleteCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { user } = req.body;
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   try {
     // find category
     const category = await prisma.category.findFirst({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
     });
 
     if (!category) {
@@ -97,7 +116,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
 
     // delete category
     await prisma.category.delete({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
     });
 
     return res.json({
@@ -113,9 +132,14 @@ export const deleteCategory = async (req: Request, res: Response) => {
 
 // get all categories
 export const getCategories = async (req: Request, res: Response) => {
-  const { user } = req.body;
+  const token = req.header("authorization")?.split(" ")[1];
 
-  if (!user) {
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
+
+  if (!userid) {
     return res
       .status(400)
       .json({ success: false, message: "user is required" });
@@ -123,7 +147,7 @@ export const getCategories = async (req: Request, res: Response) => {
 
   try {
     const categories = await prisma.category.findMany({
-      where: { userId: user },
+      where: { userId: userid },
       include: {
         icons: true, // Correct relation name
       },
@@ -149,13 +173,17 @@ export const getCategories = async (req: Request, res: Response) => {
 // get category by id
 export const getCategoryById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { user } = req.body;
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   try {
     const category = await prisma.category.findFirst({
       where: {
         id,
-        userId: user,
+        userId: userid,
       },
       include: {
         icons: true, // Correct relation name

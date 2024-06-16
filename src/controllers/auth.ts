@@ -340,8 +340,12 @@ const resetPassword = async (req: Request, res: Response) => {
 // update password
 const updatePassword = async (req: Request, res: Response) => {
   const { oldPassword, newPassword } = req.body;
-  const userId = req.body.user?.id;
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   if (!oldPassword || !newPassword) {
     return res.status(400).json({
       success: false,
@@ -352,7 +356,7 @@ const updatePassword = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id: userId,
+        id: userid,
       },
     });
 
@@ -369,7 +373,7 @@ const updatePassword = async (req: Request, res: Response) => {
 
       await prisma.user.update({
         where: {
-          id: userId,
+          id: userid,
         },
         data: {
           password: hashedPassword,
@@ -396,12 +400,17 @@ const updatePassword = async (req: Request, res: Response) => {
 // update profile
 const updateProfile = async (req: Request, res: Response) => {
   const { name, avatar, description } = req.body;
-  const userId = req.body.user;
+  const token = req.header("authorization")?.split(" ")[1];
+
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
 
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id: userId,
+        id: userid,
       },
     });
 
@@ -413,7 +422,7 @@ const updateProfile = async (req: Request, res: Response) => {
 
     await prisma.user.update({
       where: {
-        id: userId,
+        id: userid,
       },
       data: {
         name,
@@ -436,12 +445,16 @@ const updateProfile = async (req: Request, res: Response) => {
 // update email
 const updateEmail = async (req: Request, res: Response) => {
   const { email } = req.body;
-  const userId = req.body.user?.id;
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id: userId,
+        id: userid,
       },
     });
 
@@ -453,7 +466,7 @@ const updateEmail = async (req: Request, res: Response) => {
 
     await prisma.user.update({
       where: {
-        id: userId,
+        id: userid,
       },
       data: {
         email,
@@ -474,7 +487,12 @@ const updateEmail = async (req: Request, res: Response) => {
 
 // get user info
 const getUserInfo = async (req: Request, res: Response) => {
-  const userid = req.body.user;
+  const token = req.header("authorization")?.split(" ")[1];
+
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
 
   try {
     const user = await prisma.user.findUnique({

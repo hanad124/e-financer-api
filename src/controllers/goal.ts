@@ -1,10 +1,17 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
 export const createGoal = async (req: Request, res: Response) => {
-  const { name, amount, targetDate, goalType, user } = req.body;
+  const { name, amount, targetDate, goalType } = req.body;
+  const token = req.header("authorization")?.split(" ")[1];
+
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
 
   try {
     const goal = await prisma.goal.create({
@@ -13,7 +20,7 @@ export const createGoal = async (req: Request, res: Response) => {
         amount,
         targetDate: new Date(targetDate),
         goalType,
-        userId: user,
+        userId: userid,
       },
     });
     res.status(201).json({
@@ -32,12 +39,19 @@ export const createGoal = async (req: Request, res: Response) => {
 // update goal
 export const updateGoal = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, amount, targetDate, goalType, user } = req.body;
+  const { name, amount, targetDate, goalType } = req.body;
+
+  const token = req.header("authorization")?.split(" ")[1];
+
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
 
   try {
     // check if goal exists
     const goal = await prisma.goal.findFirst({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
     });
 
     if (!goal) {
@@ -70,11 +84,15 @@ export const updateGoal = async (req: Request, res: Response) => {
 };
 
 export const getGoals = async (req: Request, res: Response) => {
-  const { user } = req.body;
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   try {
     const goals = await prisma.goal.findMany({
-      where: { userId: user },
+      where: { userId: userid },
     });
 
     // check if goals exist
@@ -99,12 +117,16 @@ export const getGoals = async (req: Request, res: Response) => {
 
 export const deleteGoal = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { user } = req.body;
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   try {
     // check if goal exists
     const goal = await prisma.goal.findFirst({
-      where: { id: id, userId: user },
+      where: { id: id, userId: userid },
     });
 
     if (!goal) {
@@ -131,11 +153,15 @@ export const deleteGoal = async (req: Request, res: Response) => {
 
 export const trackGoalProgress = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { user } = req.body;
+  const token = req.header("authorization")?.split(" ")[1];
 
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+  const userid = (decoded as any).id;
   try {
     const goal = await prisma.goal.findUnique({
-      where: { id, userId: user },
+      where: { id, userId: userid },
     });
 
     if (!goal) {
@@ -147,26 +173,26 @@ export const trackGoalProgress = async (req: Request, res: Response) => {
     if (goal.goalType === "INCOME") {
       const incomeResult = await prisma.transactions.aggregate({
         _sum: { amount: true },
-        where: { userId: user, type: "INCOME" },
+        where: { userId: userid, type: "INCOME" },
       });
 
       totalAmount = incomeResult._sum.amount || 0;
     } else if (goal.goalType === "EXPENSE") {
       const expenseResult = await prisma.transactions.aggregate({
         _sum: { amount: true },
-        where: { userId: user, type: "EXPENSE" },
+        where: { userId: userid, type: "EXPENSE" },
       });
 
       totalAmount = expenseResult._sum.amount || 0;
     } else if (goal.goalType === "SAVINGS") {
       const incomeResult = await prisma.transactions.aggregate({
         _sum: { amount: true },
-        where: { userId: user, type: "INCOME" },
+        where: { userId: userid, type: "INCOME" },
       });
 
       const expenseResult = await prisma.transactions.aggregate({
         _sum: { amount: true },
-        where: { userId: user, type: "EXPENSE" },
+        where: { userId: userid, type: "EXPENSE" },
       });
 
       const totalIncome = incomeResult._sum.amount || 0;
