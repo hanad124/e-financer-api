@@ -119,9 +119,9 @@ export const getGoals = async (req: Request, res: Response) => {
     }
 
     // Track progress for each goal
-    const trackedGoals = goals.map((goal) => {
+    const trackedGoals = goals.map((goal: any) => {
       const totalAmount = goal.goalTransactions.reduce(
-        (sum, goalTransaction) => {
+        (sum: any, goalTransaction: any) => {
           return sum + goalTransaction.transaction.amount;
         },
         0
