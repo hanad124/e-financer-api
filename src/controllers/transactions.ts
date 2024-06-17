@@ -55,7 +55,7 @@ export const createTransaction = async (req: Request, res: Response) => {
     });
   } catch (error) {
     return res.status(500).json({
-      error: "Internal Server Error",
+      error: `Internal Server Error: ${error}`,
       success: false,
       message: "Transaction creation failed",
     });
