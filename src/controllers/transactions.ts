@@ -57,7 +57,7 @@ export const createTransaction = async (req: Request, res: Response) => {
     return res.status(500).json({
       error: `Internal Server Error: ${error}`,
       success: false,
-      message: "Transaction creation failed",
+      message: `Transaction creation failed ${error}`,
     });
   } finally {
     await prisma.$disconnect();
