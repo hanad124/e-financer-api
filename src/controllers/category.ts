@@ -139,6 +139,8 @@ export const getCategories = async (req: Request, res: Response) => {
 
   const userid = (decoded as any).id;
 
+  console.log("userid: ", userid);
+
   if (!userid) {
     return res
       .status(400)
@@ -152,6 +154,8 @@ export const getCategories = async (req: Request, res: Response) => {
         icons: true, // Correct relation name
       },
     });
+
+    console.log("categories: ", categories);
 
     if (categories.length === 0) {
       return res.json({ success: true, message: "No categories found" });

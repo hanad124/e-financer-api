@@ -10,10 +10,13 @@ export const createTransaction = async (req: Request, res: Response) => {
 
   const token = req.header("authorization")?.split(" ")[1];
 
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-  const userid = (decoded as any).id;
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+  const userId = (decoded as any).id;
+
   try {
     const transaction = await prisma.transactions.create({
       data: {
@@ -22,12 +25,31 @@ export const createTransaction = async (req: Request, res: Response) => {
         amount,
         type,
         categoryId: category,
-        userId: userid,
+        userId: userId,
       },
     });
 
+    // Check if a goal exists with the same name as the transaction title
+    const goal = await prisma.goal.findFirst({
+      where: { name: title, userId: userId },
+    });
+
+    console.log("goal: ", goal);
+
+    if (goal) {
+      // Create GoalTransaction record
+      const goalTransaction = await prisma.goalTransaction.create({
+        data: {
+          goalId: goal.id,
+          transactionId: transaction.id,
+        },
+      });
+
+      console.log("goalTransaction: ", goalTransaction);
+    }
+
     return res.json({
-      succuess: true,
+      success: true,
       message: "Transaction created successfully",
       transaction,
     });
@@ -41,7 +63,6 @@ export const createTransaction = async (req: Request, res: Response) => {
     await prisma.$disconnect();
   }
 };
-
 // update transaction
 export const updateTransaction = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -49,27 +70,29 @@ export const updateTransaction = async (req: Request, res: Response) => {
 
   const token = req.header("authorization")?.split(" ")[1];
 
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-  const userid = (decoded as any).id;
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+  const userId = (decoded as any).id;
 
   try {
-    // find transaction
+    // Find transaction
     const transaction = await prisma.transactions.findFirst({
-      where: { id: id, userId: userid },
+      where: { id: id, userId: userId },
     });
 
     if (!transaction) {
-      return res.status(400).json({
+      return res.status(404).json({
         message: "Transaction not found",
         success: false,
       });
     }
 
-    // update transaction
-    const data = await prisma.transactions.update({
-      where: { id: id, userId: userid },
+    // Update transaction
+    const updatedTransaction = await prisma.transactions.update({
+      where: { id: id },
       data: {
         title,
         description,
@@ -79,12 +102,35 @@ export const updateTransaction = async (req: Request, res: Response) => {
       },
     });
 
-    console.log("data: ", data);
+    // Check if a goal exists with the same name as the transaction title
+    const goal = await prisma.goal.findFirst({
+      where: { name: title, userId: userId },
+    });
+
+    if (goal) {
+      // Check if a GoalTransaction already exists
+      const goalTransaction = await prisma.goalTransaction.findFirst({
+        where: {
+          goalId: goal.id,
+          transactionId: transaction.id,
+        },
+      });
+
+      if (!goalTransaction) {
+        // Create GoalTransaction record if it does not exist
+        await prisma.goalTransaction.create({
+          data: {
+            goalId: goal.id,
+            transactionId: transaction.id,
+          },
+        });
+      }
+    }
 
     return res.json({
-      succuess: true,
+      success: true,
       message: "Transaction updated successfully",
-      transaction: data,
+      transaction: updatedTransaction,
     });
   } catch (error) {
     return res.status(500).json({
@@ -147,6 +193,8 @@ export const getTransactions = async (req: Request, res: Response) => {
   const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
 
   const userid = (decoded as any).id;
+
+  console.log("userid: ", userid);
   try {
     const transactions = await prisma.transactions.findMany({
       where: { userId: userid },
@@ -154,6 +202,8 @@ export const getTransactions = async (req: Request, res: Response) => {
         category: true,
       },
     });
+
+    console.log("transactions: ", transactions);
 
     return res.json({
       success: true,

@@ -13,6 +13,8 @@ export const createGoal = async (req: Request, res: Response) => {
 
   const userid = (decoded as any).id;
 
+  console.log("userid", userid);
+
   try {
     const goal = await prisma.goal.create({
       data: {
@@ -23,6 +25,8 @@ export const createGoal = async (req: Request, res: Response) => {
         userId: userid,
       },
     });
+
+    console.log("goal", goal);
     res.status(201).json({
       goal,
       message: "Goal created successfully",
@@ -33,6 +37,7 @@ export const createGoal = async (req: Request, res: Response) => {
       message: "Failed to create goal",
       success: false,
     });
+    console.error(error);
   }
 };
 
@@ -82,35 +87,61 @@ export const updateGoal = async (req: Request, res: Response) => {
     });
   }
 };
-
 export const getGoals = async (req: Request, res: Response) => {
   const token = req.header("authorization")?.split(" ")[1];
 
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-  const userid = (decoded as any).id;
+  // Decode token
+  const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+  const userId = (decoded as any).id;
+
   try {
     const goals = await prisma.goal.findMany({
-      where: { userId: userid },
+      where: { userId },
+      include: {
+        goalTransactions: {
+          include: {
+            transaction: true,
+          },
+        },
+      },
     });
 
-    // check if goals exist
+    // Check if goals exist
     if (goals.length === 0) {
       return res.status(404).json({
         message: "No goals found",
         success: false,
       });
     }
+
+    // Track progress for each goal
+    const trackedGoals = goals.map((goal) => {
+      const totalAmount = goal.goalTransactions.reduce(
+        (sum, goalTransaction) => {
+          return sum + goalTransaction.transaction.amount;
+        },
+        0
+      );
+
+      const progress = (totalAmount / goal.amount) * 100;
+
+      return { ...goal, totalAmount, progress };
+    });
+
     return res.status(200).json({
-      goals,
-      success: true,
+      goals: trackedGoals,
       message: "Goals fetched successfully",
+      success: true,
     });
   } catch (error) {
     return res.status(500).json({
       message: "Failed to fetch goals",
       success: false,
+      error,
     });
   }
 };
