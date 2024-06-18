@@ -51,6 +51,8 @@ export const updateCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, icon } = req.body;
 
+  console.log("req.body: ", req.body);
+
   const token = req.header("authorization")?.split(" ")[1];
 
   // decode token

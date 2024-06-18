@@ -185,6 +185,65 @@ export const deleteTransaction = async (req: Request, res: Response) => {
   }
 };
 
+// // get all transactions
+// export const getTransactions = async (req: Request, res: Response) => {
+//   const token = req.header("authorization")?.split(" ")[1];
+
+//   // decode token
+//   const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+//   const userid = (decoded as any).id;
+
+//   console.log("userid: ", userid);
+//   try {
+//     const transactions = await prisma.transactions.findMany({
+//       where: { userId: userid },
+//       include: {
+//         category: true,
+//       },
+//     });
+
+//     // prepare sorted transactions by type like income and expense and their total
+//     const incomeTransactions = transactions.filter(
+//       (transaction) => transaction.type === "INCOME"
+//     );
+//     const expenseTransactions = transactions.filter(
+//       (transaction) => transaction.type === "EXPENSE"
+//     );
+
+//     const totalIncome = incomeTransactions.reduce(
+//       (acc, transaction) => acc + transaction.amount,
+//       0
+//     );
+
+//     const totalExpense = expenseTransactions.reduce(
+//       (acc, transaction) => acc + transaction.amount,
+//       0
+//     );
+
+//     const totalBalance = totalIncome - totalExpense;
+
+//       // make monthly expense,its like start expense of month and end of month expense
+
+//     return res.json({
+//       success: true,
+//       message: "Transactions fetched successfully",
+//       transactions,
+//       totalIncome,
+//       totalExpense,
+//       totalBalance,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       error: "Internal Server Error",
+//       success: false,
+//       message: "Transaction fetch failed",
+//     });
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// };
+
 // get all transactions
 export const getTransactions = async (req: Request, res: Response) => {
   const token = req.header("authorization")?.split(" ")[1];
@@ -203,12 +262,103 @@ export const getTransactions = async (req: Request, res: Response) => {
       },
     });
 
-    console.log("transactions: ", transactions);
+    // get category icons of the categories in the transactions
+    const categoryIds = transactions.map(
+      (transaction) => transaction.categoryId
+    );
+
+    const categories = await prisma.category.findMany({
+      where: {
+        id: {
+          in: categoryIds,
+        },
+      },
+    });
+
+    const icons = await prisma.icon.findMany({
+      where: {
+        id: {
+          in: categories.map((category) => category.iconId),
+        },
+      },
+    });
+
+    const transactionSWithCategoryIcons = transactions.map((transaction) => {
+      const category = categories.find(
+        (category) => category.id === transaction.categoryId
+      );
+
+      const icon = icons.find((icon) => icon.id === category?.iconId);
+
+      return {
+        ...transaction,
+        category: {
+          ...category,
+          icon: icon?.icon,
+        },
+      };
+    });
+
+    // prepare sorted transactions by type like income and expense and their total
+    const incomeTransactions = transactions.filter(
+      (transaction) => transaction.type === "INCOME"
+    );
+    const expenseTransactions = transactions.filter(
+      (transaction) => transaction.type === "EXPENSE"
+    );
+
+    const totalIncome = incomeTransactions.reduce(
+      (acc, transaction) => acc + transaction.amount,
+      0
+    );
+
+    const totalExpense = expenseTransactions.reduce(
+      (acc, transaction) => acc + transaction.amount,
+      0
+    );
+
+    const totalBalance = totalIncome - totalExpense;
+
+    // make monthly expense, its like start expense of month and end of month expense
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    const startOfMonth = new Date(currentYear, currentMonth, 1);
+    const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
+
+    const monthlyExpenses = transactions.filter(
+      (transaction) =>
+        transaction.type === "EXPENSE" &&
+        new Date(transaction.createdAt) >= startOfMonth &&
+        new Date(transaction.createdAt) <= endOfMonth
+    );
+
+    const totalMonthlyExpense = monthlyExpenses.reduce(
+      (acc, transaction) => acc + transaction.amount,
+      0
+    );
+
+    // Calculate start expense of the month
+    const startExpenses = transactions.filter(
+      (transaction) =>
+        transaction.type === "EXPENSE" &&
+        new Date(transaction.createdAt) < startOfMonth
+    );
+
+    const startOfMonthExpense = startExpenses.reduce(
+      (acc, transaction) => acc + transaction.amount,
+      0
+    );
 
     return res.json({
       success: true,
       message: "Transactions fetched successfully",
-      transactions,
+      transactions: transactionSWithCategoryIcons,
+      totalIncome,
+      totalExpense,
+      totalBalance,
+      totalMonthlyExpense,
+      startOfMonthExpense,
     });
   } catch (error) {
     return res.status(500).json({
