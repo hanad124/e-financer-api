@@ -87,18 +87,74 @@ export const updateGoal = async (req: Request, res: Response) => {
     });
   }
 };
+// export const getGoals = async (req: Request, res: Response) => {
+//   const token = req.header("authorization")?.split(" ")[1];
+
+//   if (!token) {
+//     return res.status(401).json({ message: "Unauthorized" });
+//   }
+
+//   // Decode token
+//   const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+//   const userId = (decoded as any).id;
+
+//   try {
+//     const goals = await prisma.goal.findMany({
+//       where: { userId },
+//       include: {
+//         goalTransactions: {
+//           include: {
+//             transaction: true,
+//           },
+//         },
+//       },
+//     });
+
+//     // Check if goals exist
+//     if (goals.length === 0) {
+//       return res.status(404).json({
+//         message: "No goals found",
+//         success: false,
+//       });
+//     }
+
+//     // Track progress for each goal
+//     const trackedGoals = goals.map((goal: any) => {
+//       const totalAmount = goal.goalTransactions.reduce(
+//         (sum: any, goalTransaction: any) => {
+//           return sum + goalTransaction.transaction.amount;
+//         },
+//         0
+//       );
+
+//       const progress = (totalAmount / goal.amount) * 100;
+
+//       return { ...goal, totalAmount, progress };
+//     });
+
+//     return res.status(200).json({
+//       goals: trackedGoals,
+//       message: "Goals fetched successfully",
+//       success: true,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       message: "Failed to fetch goals",
+//       success: false,
+//       error,
+//     });
+//   }
+// };
+
 export const getGoals = async (req: Request, res: Response) => {
   const token = req.header("authorization")?.split(" ")[1];
 
-  if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
+  // decode token
+  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
 
-  // Decode token
-  const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
   const userId = (decoded as any).id;
-
   try {
+    // Fetch goals for the user
     const goals = await prisma.goal.findMany({
       where: { userId },
       include: {
@@ -110,39 +166,19 @@ export const getGoals = async (req: Request, res: Response) => {
       },
     });
 
-    // Check if goals exist
-    if (goals.length === 0) {
-      return res.status(404).json({
-        message: "No goals found",
-        success: false,
-      });
-    }
-
-    // Track progress for each goal
-    const trackedGoals = goals.map((goal: any) => {
-      const totalAmount = goal.goalTransactions.reduce(
-        (sum: any, goalTransaction: any) => {
-          return sum + goalTransaction.transaction.amount;
-        },
-        0
-      );
-
-      const progress = (totalAmount / goal.amount) * 100;
-
-      return { ...goal, totalAmount, progress };
-    });
-
-    return res.status(200).json({
-      goals: trackedGoals,
-      message: "Goals fetched successfully",
+    return res.json({
       success: true,
+      message: "Goals fetched successfully",
+      goals,
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Failed to fetch goals",
+      error: `Internal Server Error: ${error}`,
       success: false,
-      error,
+      message: `Failed to fetch goals: ${error}`,
     });
+  } finally {
+    await prisma.$disconnect();
   }
 };
 

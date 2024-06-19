@@ -112,14 +112,15 @@ model Budget {
 }
 
 model Goal {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  amount     Float
-  targetDate DateTime
-  goalType   GoalType
-  userId     String   @db.ObjectId
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  amount        Float
+  targetDate    DateTime
+  goalType      GoalType
+  userId        String   @db.ObjectId
+  savedAmount   Float    @default(0.0)   // Field to store saved amount
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // relations
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -29,23 +29,17 @@ export const createTransaction = async (req: Request, res: Response) => {
       },
     });
 
-    // Check if a goal exists with the same name as the transaction title
-    const goal = await prisma.goal.findFirst({
-      where: { name: title, userId: userId },
-    });
+    // If the transaction type is INCOME, update all goals for the user
+    if (type === "INCOME") {
+      const goals = await prisma.goal.findMany({ where: { userId } });
+      const updateGoals = goals.map((goal) =>
+        prisma.goal.update({
+          where: { id: goal.id },
+          data: { savedAmount: goal.savedAmount + amount },
+        })
+      );
 
-    console.log("goal: ", goal);
-
-    if (goal) {
-      // Create GoalTransaction record
-      const goalTransaction = await prisma.goalTransaction.create({
-        data: {
-          goalId: goal.id,
-          transactionId: transaction.id,
-        },
-      });
-
-      console.log("goalTransaction: ", goalTransaction);
+      await Promise.all(updateGoals);
     }
 
     return res.json({
@@ -80,7 +74,7 @@ export const updateTransaction = async (req: Request, res: Response) => {
   try {
     // Find transaction
     const transaction = await prisma.transactions.findFirst({
-      where: { id: id, userId: userId },
+      where: { id, userId },
     });
 
     if (!transaction) {
@@ -92,7 +86,7 @@ export const updateTransaction = async (req: Request, res: Response) => {
 
     // Update transaction
     const updatedTransaction = await prisma.transactions.update({
-      where: { id: id },
+      where: { id },
       data: {
         title,
         description,
@@ -102,29 +96,19 @@ export const updateTransaction = async (req: Request, res: Response) => {
       },
     });
 
-    // Check if a goal exists with the same name as the transaction title
-    const goal = await prisma.goal.findFirst({
-      where: { name: title, userId: userId },
-    });
-
-    if (goal) {
-      // Check if a GoalTransaction already exists
-      const goalTransaction = await prisma.goalTransaction.findFirst({
-        where: {
-          goalId: goal.id,
-          transactionId: transaction.id,
-        },
-      });
-
-      if (!goalTransaction) {
-        // Create GoalTransaction record if it does not exist
-        await prisma.goalTransaction.create({
+    // If the transaction type is INCOME, update all goals for the user
+    if (type === "INCOME") {
+      const goals = await prisma.goal.findMany({ where: { userId } });
+      const updateGoals = goals.map((goal) =>
+        prisma.goal.update({
+          where: { id: goal.id },
           data: {
-            goalId: goal.id,
-            transactionId: transaction.id,
+            savedAmount: goal.savedAmount + (amount - transaction.amount), // Adjust saved amount based on the difference
           },
-        });
-      }
+        })
+      );
+
+      await Promise.all(updateGoals);
     }
 
     return res.json({
@@ -350,6 +334,24 @@ export const getTransactions = async (req: Request, res: Response) => {
       0
     );
 
+    // total expenses per week
+    const currentDate = new Date();
+    const currentDay = currentDate.getDay();
+    const currentWeek = currentDate.getDate() - currentDay;
+
+    const startOfWeek = new Date(currentDate.setDate(currentWeek));
+
+    const weeklyExpenses = transactions.filter(
+      (transaction) =>
+        transaction.type === "EXPENSE" &&
+        new Date(transaction.createdAt) >= startOfWeek
+    );
+
+    const totalWeeklyExpense = weeklyExpenses.reduce(
+      (acc, transaction) => acc + transaction.amount,
+      0
+    );
+
     return res.json({
       success: true,
       message: "Transactions fetched successfully",
@@ -359,6 +361,7 @@ export const getTransactions = async (req: Request, res: Response) => {
       totalBalance,
       totalMonthlyExpense,
       startOfMonthExpense,
+      totalWeeklyExpense,
     });
   } catch (error) {
     return res.status(500).json({

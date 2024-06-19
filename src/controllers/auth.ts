@@ -45,6 +45,12 @@ const register = async (req: Request, res: Response) => {
       }
     );
 
+    // send verification email
+    await sendEmail({
+      user: newUser,
+      emailType: "verifyemail",
+    });
+
     return res.status(201).send({
       success: true,
       message: "User created successfully, please verify your email!",
@@ -194,6 +200,8 @@ const verifyEmailLink = async (req: Request, res: Response) => {
 
 const verifyEmail = async (req: Request, res: Response) => {
   const { token } = req.body;
+
+  console.log("token", token);
 
   try {
     const user = await prisma.user.findFirst({
@@ -399,7 +407,7 @@ const updatePassword = async (req: Request, res: Response) => {
 
 // update profile
 const updateProfile = async (req: Request, res: Response) => {
-  const { name, avatar, description } = req.body;
+  const { name, avatar, description, email } = req.body;
   const token = req.header("authorization")?.split(" ")[1];
 
   // decode token
@@ -428,6 +436,7 @@ const updateProfile = async (req: Request, res: Response) => {
         name,
         avatar,
         description,
+        email,
       },
     });
 
