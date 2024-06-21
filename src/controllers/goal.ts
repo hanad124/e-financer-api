@@ -38,6 +38,7 @@ export const createGoal = async (req: Request, res: Response) => {
       success: true,
     });
   } catch (error) {
+    console.log("goal error", error);
     res.status(500).json({
       message: "Failed to create goal",
       success: false,

@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { sendEmail } from "../utils/sendEmail";
+import { ImageUpload } from "../utils/upload";
 
 const prisma = new PrismaClient();
 
@@ -408,17 +409,26 @@ const updatePassword = async (req: Request, res: Response) => {
 // update profile
 const updateProfile = async (req: Request, res: Response) => {
   const { name, avatar, description, email } = req.body;
+
+  console.log(
+    "name, avatar, description, email",
+    name,
+    avatar,
+    description,
+    email
+  );
+  console.log("req.body", req.body);
   const token = req.header("authorization")?.split(" ")[1];
 
   // decode token
   const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
 
-  const userid = (decoded as any).id;
+  const userId = (decoded as any).id;
 
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id: userid,
+        id: userId,
       },
     });
 
@@ -428,13 +438,22 @@ const updateProfile = async (req: Request, res: Response) => {
         .json({ success: false, message: "User not found!" });
     }
 
+    // Upload image to cloudinary
+    let avatarUrl = avatar;
+    if (avatar) {
+      const image = await ImageUpload(avatar as string);
+      avatarUrl = image;
+
+      console.log("image", image);
+    }
+
     await prisma.user.update({
       where: {
-        id: userid,
+        id: userId,
       },
       data: {
         name,
-        avatar,
+        avatar: avatarUrl,
         description,
         email,
       },
@@ -445,11 +464,65 @@ const updateProfile = async (req: Request, res: Response) => {
       message: "Profile updated successfully!",
     });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   } finally {
     await prisma.$disconnect();
   }
 };
+// const updateProfile = async (req: Request, res: Response) => {
+// const { name, avatar, description, email } = req.body;
+// const token = req.header("authorization")?.split(" ")[1];
+
+// // decode token
+// const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+
+// const userid = (decoded as any).id;
+
+//   try {
+//     const user = await prisma.user.findUnique({
+//       where: {
+//         id: userid,
+//       },
+//     });
+
+//     if (!user) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "User not found!" });
+//     }
+
+//     // upload image to cloudinary
+//     let avatarUrl = avatar;
+//     if (avatar) {
+//       const image = await ImageUpload(avatar);
+//       avatarUrl = image.url;
+
+//       await prisma.user.update({
+//         where: {
+//           id: userid,
+//         },
+//         data: {
+//           name,
+//           avatar: avatarUrl,
+//           description,
+//           email,
+//         },
+//       });
+
+//       return res.json({
+//         success: true,
+//         message: "Profile updated successfully!",
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(500).json({ message: "Internal server error" });
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// };
 
 // update email
 const updateEmail = async (req: Request, res: Response) => {

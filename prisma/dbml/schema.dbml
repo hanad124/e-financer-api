@@ -33,7 +33,7 @@ Table Transactions {
   title String [not null]
   description String [not null]
   amount Float [not null]
-  number Int [not null]
+  number Int
   type TransactionType [not null]
   categoryId String [not null]
   userId String [not null]

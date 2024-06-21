@@ -51,7 +51,7 @@ model Transactions {
   title       String
   description String
   amount      Float
-  number    Int
+  number    Int?
   type        TransactionType
 
   categoryId String   @db.ObjectId

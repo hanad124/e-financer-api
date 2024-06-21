@@ -33,14 +33,21 @@ export const createTransaction = async (req: Request, res: Response) => {
     // If the transaction type is INCOME, update all goals for the user
     if (type === "INCOME") {
       const goals = await prisma.goal.findMany({ where: { userId } });
-      const updateGoals = goals.map((goal) =>
-        prisma.goal.update({
-          where: { id: goal.id },
-          data: { savedAmount: goal.savedAmount + amount },
-        })
-      );
+      let remainingAmount = amount;
 
-      await Promise.all(updateGoals);
+      for (const goal of goals) {
+        if (remainingAmount <= 0) break;
+
+        const amountNeeded = goal.amount - goal.savedAmount;
+        if (amountNeeded > 0) {
+          const amountToAdd = Math.min(amountNeeded, remainingAmount);
+          await prisma.goal.update({
+            where: { id: goal.id },
+            data: { savedAmount: goal.savedAmount + amountToAdd },
+          });
+          remainingAmount -= amountToAdd;
+        }
+      }
     }
 
     return res.json({
@@ -50,14 +57,15 @@ export const createTransaction = async (req: Request, res: Response) => {
     });
   } catch (error) {
     return res.status(500).json({
-      error: `Internal Server Error: ${error}`,
+      error: `Internal Server Error: ${error.message}`,
       success: false,
-      message: `Transaction creation failed ${error}`,
+      message: `Transaction creation failed: ${error.message}`,
     });
   } finally {
     await prisma.$disconnect();
   }
 };
+
 // update transaction
 export const updateTransaction = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -101,16 +109,21 @@ export const updateTransaction = async (req: Request, res: Response) => {
     // If the transaction type is INCOME, update all goals for the user
     if (type === "INCOME") {
       const goals = await prisma.goal.findMany({ where: { userId } });
-      const updateGoals = goals.map((goal) =>
-        prisma.goal.update({
-          where: { id: goal.id },
-          data: {
-            savedAmount: goal.savedAmount + (amount - transaction.amount), // Adjust saved amount based on the difference
-          },
-        })
-      );
+      let remainingAmount = amount;
 
-      await Promise.all(updateGoals);
+      for (const goal of goals) {
+        if (remainingAmount <= 0) break;
+
+        const amountNeeded = goal.amount - goal.savedAmount;
+        if (amountNeeded > 0) {
+          const amountToAdd = Math.min(amountNeeded, remainingAmount);
+          await prisma.goal.update({
+            where: { id: goal.id },
+            data: { savedAmount: goal.savedAmount + amountToAdd },
+          });
+          remainingAmount -= amountToAdd;
+        }
+      }
     }
 
     return res.json({
@@ -239,7 +252,7 @@ export const getTransactions = async (req: Request, res: Response) => {
 
   const userid = (decoded as any).id;
 
-  console.log("userid: ", userid);
+  console.log("transactions: ", userid);
   try {
     const transactions = await prisma.transactions.findMany({
       where: { userId: userid },
@@ -247,6 +260,8 @@ export const getTransactions = async (req: Request, res: Response) => {
         category: true,
       },
     });
+
+    console.log("transactions: ", transactions);
 
     // get category icons of the categories in the transactions
     const categoryIds = transactions.map(
@@ -366,6 +381,7 @@ export const getTransactions = async (req: Request, res: Response) => {
       totalWeeklyExpense,
     });
   } catch (error) {
+    console.log("tansaction error: ", error);
     return res.status(500).json({
       error: "Internal Server Error",
       success: false,
