@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 // create transaction
 export const createTransaction = async (req: Request, res: Response) => {
-  const { title, description, amount, type, category } = req.body;
+  const { title, description, amount, type, category, number } = req.body;
 
   const token = req.header("authorization")?.split(" ")[1];
 
@@ -23,6 +23,7 @@ export const createTransaction = async (req: Request, res: Response) => {
         title,
         description,
         amount,
+        number,
         type,
         categoryId: category,
         userId: userId,
@@ -60,7 +61,7 @@ export const createTransaction = async (req: Request, res: Response) => {
 // update transaction
 export const updateTransaction = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { title, description, amount, type, category } = req.body;
+  const { title, description, amount, type, category, number } = req.body;
 
   const token = req.header("authorization")?.split(" ")[1];
 
@@ -92,6 +93,7 @@ export const updateTransaction = async (req: Request, res: Response) => {
         description,
         amount,
         type,
+        number,
         categoryId: category,
       },
     });

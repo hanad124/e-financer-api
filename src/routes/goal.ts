@@ -4,7 +4,6 @@ import {
   getGoals,
   deleteGoal,
   updateGoal,
-  trackGoalProgress,
 } from "../controllers/goal";
 import { isAuthenticated } from "../middlewares/authMiddleware";
 
@@ -14,6 +13,6 @@ GoalRouter.post("/", isAuthenticated, createGoal);
 GoalRouter.patch("/:id", isAuthenticated, updateGoal);
 GoalRouter.get("/", isAuthenticated, getGoals);
 GoalRouter.delete("/:id", isAuthenticated, deleteGoal);
-GoalRouter.post("/track/:id", isAuthenticated, trackGoalProgress);
+// GoalRouter.post("/track/:id", isAuthenticated, trackGoalProgress);
 
 export { GoalRouter };

@@ -49,15 +49,16 @@ const sendEmail = async ({
       <div style="font-family: Arial, sans-serif; background-color: #f8f8f8">
       <div
         style="
-          background: #3cbd7d;
+          background: #6957E7;
           width: 100;
           padding: 3rem;
           border-radius: 5px 5px 0px 0px;
           text-align: center;
         "
       >
+        
         <h1 style="color: #fff; letter-spacing: 0.2rem; font-size: 2rem">
-          Expense Tracker 💰
+          e-Financer 
         </h1>
       </div>
       <div style="background-color: #ffffff; padding: 20px; border-radius: 5px">
@@ -76,7 +77,7 @@ const sendEmail = async ({
             style="
               display: inline-block;
               padding: 16px 50px;
-              background-color: #3cbd7d;
+              background-color: #6957E7;
               color: #ffffff;
               text-decoration: none;
               border-radius: 50px;
@@ -110,7 +111,7 @@ const sendEmail = async ({
       <div style="font-family: Arial, sans-serif; background-color: #f8f8f8">
       <div
         style="
-          background: #3cbd7d;
+          background: #6957E7;
           width: 100;
           padding: 3rem;
           border-radius: 5px 5px 0px 0px;
@@ -137,7 +138,7 @@ const sendEmail = async ({
             style="
               display: inline-block;
               padding: 16px 50px;
-              background-color: #3cbd7d;
+              background-color: #6957E7;
               color: #ffffff;
               text-decoration: none;
               border-radius: 50px;
