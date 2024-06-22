@@ -36,8 +36,9 @@ export const createCategory = async (req: Request, res: Response) => {
       category,
     });
   } catch (error) {
+    console.log("category errerror: ", error);
     return res.status(500).json({
-      error: "Internal Server Error",
+      error: `Internal Server Error, ${error}`,
       success: false,
       message: "Category creation failed",
     });
@@ -88,7 +89,8 @@ export const updateCategory = async (req: Request, res: Response) => {
       category,
     });
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.log("category errerror: ", error);
+    return res.status(500).json({ error: `Internal Server Error, ${error}` });
   } finally {
     await prisma.$disconnect();
   }
@@ -140,8 +142,7 @@ export const getCategories = async (req: Request, res: Response) => {
   const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
 
   const userid = (decoded as any).id;
-
-  console.log("userid: ", userid);
+  console.log("req.body: ", req.body);
 
   if (!userid) {
     return res
@@ -153,19 +154,28 @@ export const getCategories = async (req: Request, res: Response) => {
     const categories = await prisma.category.findMany({
       where: { userId: userid },
       include: {
-        icons: true, // Correct relation name
+        icons: true,
+        transactions: true,
       },
     });
-
-    console.log("categories: ", categories);
 
     if (categories.length === 0) {
       return res.json({ success: true, message: "No categories found" });
     }
 
+    const categoriesWithTransactionCount = categories.map((category) => ({
+      ...category,
+      transactionCount: category.transactions.length,
+    }));
+
+    console.log(
+      "categoriesWithTransactionCount: ",
+      categoriesWithTransactionCount
+    );
+
     return res.json({
       success: true,
-      categories,
+      categories: categoriesWithTransactionCount,
       message: "Categories fetched successfully!",
     });
   } catch (error) {
