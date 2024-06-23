@@ -8,14 +8,23 @@ import { message } from "antd";
 import { resetPassword } from "@/apicalls/auth";
 
 // schema
-const formSchem = z.object({
-  password: z
-    .string()
-    .min(6, "Password must be at least 6 characters long")
-    .max(10, "Password must be at most 10 characters long"),
-  confirmPassword: z.string(),
-  //   }),
-});
+const formSchema = z
+  .object({
+    password: z
+      .string()
+      .min(6, "Password must be at least 6 characters long")
+      .max(10, "Password must be at most 10 characters long"),
+    confirmPassword: z.string().min(6).max(10),
+  })
+  .superRefine(({ confirmPassword, password }, ctx) => {
+    if (confirmPassword !== password) {
+      ctx.addIssue({
+        code: "custom",
+        message: "The passwords did not match",
+        path: ["confirmPassword"],
+      });
+    }
+  });
 
 const ResetPassword = () => {
   const params = useParams();
@@ -25,12 +34,12 @@ const ResetPassword = () => {
     control,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(formSchem),
+    resolver: zodResolver(formSchema),
   });
 
   const [loading, setLoading] = useState(false);
 
-  const onSubmit = (data: z.infer<typeof formSchem>) => {
+  const onSubmit = (data: any) => {
     console.log("data: ", data);
     setLoading(true);
 
@@ -43,7 +52,6 @@ const ResetPassword = () => {
       .then((response) => {
         console.log("response: ", response);
         if (response?.success) {
-          // loading message for 0.5 seconds
           message.loading("Wait, your password is getting reset...", 0.5);
           message.success(response?.message);
           setLoading(false);
@@ -52,7 +60,7 @@ const ResetPassword = () => {
           setLoading(false);
         }
       })
-      .catch((error: any) => {
+      .catch((error) => {
         message.error(error.message);
         setLoading(false);
       });
@@ -80,7 +88,7 @@ const ResetPassword = () => {
           />
           {errors.password && (
             <p className="text-red-500 text-sm mt-1">
-              {errors.password.message}
+              {String(errors.password.message)}
             </p>
           )}
         </div>
@@ -101,7 +109,7 @@ const ResetPassword = () => {
           />
           {errors.confirmPassword && (
             <p className="text-red-500 text-sm mt-1">
-              {errors.confirmPassword.message}
+              {String(errors.confirmPassword.message)}
             </p>
           )}
         </div>
