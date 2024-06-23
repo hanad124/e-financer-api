@@ -9,3 +9,13 @@ export const verifyemail = async (payload: any) => {
     return error.response.message;
   }
 };
+
+// reset-password
+export const resetPassword = async (payload: any) => {
+  try {
+    const response = await axiosInstance.post("/auth/reset-password", payload);
+    return response.data;
+  } catch (error: any) {
+    return error.response.message;
+  }
+};

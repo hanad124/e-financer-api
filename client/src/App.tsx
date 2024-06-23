@@ -4,25 +4,23 @@ import {
   // BrowserRouter as Router,
   Routes,
   Route,
-  useLocation,
-  Navigate,
 } from "react-router-dom";
 import VerifyEmail from "./components/VerifyEmail";
+import ResetPassword from "./components/ResetPassword";
 
 function App() {
-  const location = useLocation();
-
-  const isVerificationPage = /^\/verifyemail\/[^/]+$/.test(location.pathname);
-
   return (
     <Routes>
-      {isVerificationPage ? (
-        <Route path="/verifyemail/:id" element={<VerifyEmail />} />
-      ) : (
-        <Route path="*" element={<Navigate to="/verifyemail/:id" />} />
-      )}{" "}
+      <Route path="/verifyemail/:id" element={<VerifyEmail />} />
+      <Route path="/resetpassword/:id" element={<ResetPassword />} />
     </Routes>
   );
 }
 
 export default App;
+
+// {isVerificationPage ? (
+//   <Route path="/verifyemail/:id" element={<VerifyEmail />} />
+// ) : (
+//   <Route path="*" element={<Navigate to="/verifyemail/:id" />} />
+// )}{" "}
