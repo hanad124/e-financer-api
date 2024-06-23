@@ -265,7 +265,7 @@ export const getTransactions = async (req: Request, res: Response) => {
 
     // get category icons of the categories in the transactions
     const categoryIds = transactions.map(
-      (transaction) => transaction.categoryId
+      (transaction: any) => transaction.categoryId
     );
 
     const categories = await prisma.category.findMany({
@@ -279,42 +279,44 @@ export const getTransactions = async (req: Request, res: Response) => {
     const icons = await prisma.icon.findMany({
       where: {
         id: {
-          in: categories.map((category) => category.iconId),
+          in: categories.map((category: any) => category.iconId),
         },
       },
     });
 
-    const transactionSWithCategoryIcons = transactions.map((transaction) => {
-      const category = categories.find(
-        (category) => category.id === transaction.categoryId
-      );
+    const transactionSWithCategoryIcons = transactions.map(
+      (transaction: any) => {
+        const category = categories.find(
+          (category: any) => category.id === transaction.categoryId
+        );
 
-      const icon = icons.find((icon) => icon.id === category?.iconId);
+        const icon = icons.find((icon: any) => icon.id === category?.iconId);
 
-      return {
-        ...transaction,
-        category: {
-          ...category,
-          icon: icon?.icon,
-        },
-      };
-    });
+        return {
+          ...transaction,
+          category: {
+            ...category,
+            icon: icon?.icon,
+          },
+        };
+      }
+    );
 
     // prepare sorted transactions by type like income and expense and their total
     const incomeTransactions = transactions.filter(
-      (transaction) => transaction.type === "INCOME"
+      (transaction: any) => transaction.type === "INCOME"
     );
     const expenseTransactions = transactions.filter(
-      (transaction) => transaction.type === "EXPENSE"
+      (transaction: any) => transaction.type === "EXPENSE"
     );
 
     const totalIncome = incomeTransactions.reduce(
-      (acc, transaction) => acc + transaction.amount,
+      (acc: any, transaction: any) => acc + transaction.amount,
       0
     );
 
     const totalExpense = expenseTransactions.reduce(
-      (acc, transaction) => acc + transaction.amount,
+      (acc: any, transaction: any) => acc + transaction.amount,
       0
     );
 
@@ -328,26 +330,26 @@ export const getTransactions = async (req: Request, res: Response) => {
     const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
 
     const monthlyExpenses = transactions.filter(
-      (transaction) =>
+      (transaction: any) =>
         transaction.type === "EXPENSE" &&
         new Date(transaction.createdAt) >= startOfMonth &&
         new Date(transaction.createdAt) <= endOfMonth
     );
 
     const totalMonthlyExpense = monthlyExpenses.reduce(
-      (acc, transaction) => acc + transaction.amount,
+      (acc: any, transaction: any) => acc + transaction.amount,
       0
     );
 
     // Calculate start expense of the month
     const startExpenses = transactions.filter(
-      (transaction) =>
+      (transaction: any) =>
         transaction.type === "EXPENSE" &&
         new Date(transaction.createdAt) < startOfMonth
     );
 
     const startOfMonthExpense = startExpenses.reduce(
-      (acc, transaction) => acc + transaction.amount,
+      (acc: any, transaction: any) => acc + transaction.amount,
       0
     );
 
@@ -359,13 +361,13 @@ export const getTransactions = async (req: Request, res: Response) => {
     const startOfWeek = new Date(currentDate.setDate(currentWeek));
 
     const weeklyExpenses = transactions.filter(
-      (transaction) =>
+      (transaction: any) =>
         transaction.type === "EXPENSE" &&
         new Date(transaction.createdAt) >= startOfWeek
     );
 
     const totalWeeklyExpense = weeklyExpenses.reduce(
-      (acc, transaction) => acc + transaction.amount,
+      (acc: any, transaction: any) => acc + transaction.amount,
       0
     );
 
