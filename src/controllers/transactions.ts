@@ -31,23 +31,63 @@ export const createTransaction = async (req: Request, res: Response) => {
     });
 
     // If the transaction type is INCOME, update all goals for the user
+    //   if (type === "INCOME") {
+    //     const goals = await prisma.goal.findMany({ where: { userId } });
+    //     let remainingAmount = amount;
+
+    //     for (const goal of goals) {
+    //       // let remainingAmount = amount - goal.savedAmount;
+    //       if (remainingAmount <= 0) break;
+
+    //       const amountNeeded = goal.amount - goal.savedAmount;
+    //       if (amountNeeded > 0) {
+    //         const amountToAdd = Math.min(amountNeeded, remainingAmount);
+    //         await prisma.goal.update({
+    //           where: { id: goal.id },
+    //           data: { savedAmount: goal.savedAmount + amountToAdd },
+    //         });
+    //         remainingAmount -= amountToAdd;
+    //       }
+    //     }
+    //  }
+
     if (type === "INCOME") {
       const goals = await prisma.goal.findMany({ where: { userId } });
       let remainingAmount = amount;
+      let updateOperations = [];
 
       for (const goal of goals) {
-        if (remainingAmount <= 0) break;
+        if (goal.savedAmount < goal.amount) {
+          const amountNeeded = goal.amount - goal.savedAmount;
+          if (amountNeeded > 0 && remainingAmount > 0) {
+            const amountToAdd = Math.min(remainingAmount, amountNeeded);
+            const newSavedAmount = goal.savedAmount + amountToAdd;
+            remainingAmount -= amountToAdd;
 
-        const amountNeeded = goal.amount - goal.savedAmount;
-        if (amountNeeded > 0) {
-          const amountToAdd = Math.min(amountNeeded, remainingAmount);
-          await prisma.goal.update({
-            where: { id: goal.id },
-            data: { savedAmount: goal.savedAmount + amountToAdd },
-          });
-          remainingAmount -= amountToAdd;
+            // Prepare update operation, do not execute it yet
+            updateOperations.push(
+              prisma.goal.update({
+                where: { id: goal.id },
+                data: { savedAmount: newSavedAmount },
+              })
+            );
+          }
+        }
+
+        // Stop preparing further updates if no remaining amount is left
+        if (remainingAmount <= 0) {
+          break;
         }
       }
+
+      // Execute all update operations in parallel
+      await Promise.all(updateOperations)
+        .then(() => {
+          console.log("All updates completed successfully.");
+        })
+        .catch((error) => {
+          console.error("Error updating goals:", error);
+        });
     }
 
     return res.json({
@@ -294,7 +334,7 @@ export const getTransactions = async (req: Request, res: Response) => {
       },
     });
 
-    console.log("transactions: ", transactions);
+    // console.log("transactions: ", transactions);
 
     // get category icons of the categories in the transactions
     const categoryIds = transactions.map(
