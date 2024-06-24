@@ -119,7 +119,7 @@ const sendEmail = async ({
         "
       >
         <h1 style="color: #fff; letter-spacing: 0.2rem; font-size: 2rem">
-          Expense Tracker 💰
+          e-Financer
         </h1>
       </div>
       <div style="background-color: #ffffff; padding: 20px; border-radius: 5px">

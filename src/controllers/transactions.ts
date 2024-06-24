@@ -107,6 +107,26 @@ export const updateTransaction = async (req: Request, res: Response) => {
     });
 
     // If the transaction type is INCOME, update all goals for the user
+    // if (type === "INCOME") {
+    //   const goals = await prisma.goal.findMany({ where: { userId } });
+    //   let remainingAmount = amount;
+
+    //   for (const goal of goals) {
+    //     if (remainingAmount <= 0) break;
+
+    //     const amountNeeded = goal.amount - goal.savedAmount;
+    //     if (amountNeeded > 0) {
+    //       const amountToAdd = Math.min(amountNeeded, remainingAmount);
+    //       await prisma.goal.update({
+    //         where: { id: goal.id },
+    //         data: { savedAmount: goal.savedAmount + amountToAdd },
+    //       });
+    //       remainingAmount -= amountToAdd;
+    //     }
+    //   }
+    // }
+
+    // If the transaction type is INCOME, update all goals for the user
     if (type === "INCOME") {
       const goals = await prisma.goal.findMany({ where: { userId } });
       let remainingAmount = amount;
@@ -117,11 +137,24 @@ export const updateTransaction = async (req: Request, res: Response) => {
         const amountNeeded = goal.amount - goal.savedAmount;
         if (amountNeeded > 0) {
           const amountToAdd = Math.min(amountNeeded, remainingAmount);
+
+          console.log(
+            `Updating goal ${goal.id}. Current saved: ${goal.savedAmount}, Adding: ${amountToAdd}, Remaining amount: ${remainingAmount}`
+          );
+
           await prisma.goal.update({
             where: { id: goal.id },
             data: { savedAmount: goal.savedAmount + amountToAdd },
           });
           remainingAmount -= amountToAdd;
+
+          console.log(
+            `Goal ${goal.id} updated. New saved amount: ${
+              goal.savedAmount + amountToAdd
+            }, Remaining amount: ${remainingAmount}`
+          );
+        } else {
+          console.log(`Goal ${goal.id} already fully funded.`);
         }
       }
     }
