@@ -72,7 +72,7 @@ const sendEmail = async ({
         <div style="text-align: center">
           <a
             href="
-                       https://expense-tracker-client-roan.vercel.app/verifyemail/${encryptedToken}
+                       https://expense-tracker-client-funs.onrender.com/verifyemail/${encryptedToken}
                       "
             style="
               display: inline-block;
@@ -133,7 +133,7 @@ const sendEmail = async ({
         <div style="text-align: center">
           <a
             href="
-                        https://expense-tracker-client-roan.vercel.app/resetpassword/${encryptedToken}
+                        https://expense-tracker-client-funs.onrender.com/resetpassword/${encryptedToken}
                       "
             style="
               display: inline-block;
