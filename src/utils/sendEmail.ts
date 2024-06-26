@@ -7,9 +7,11 @@ const prisma = new PrismaClient();
 const sendEmail = async ({
   user,
   emailType,
+  props,
 }: {
   user: any;
   emailType: string;
+  props?: any;
 }) => {
   try {
     const transporter = nodemailer.createTransport({
@@ -167,6 +169,7 @@ const sendEmail = async ({
     }
     // Send email when gaol is achieved
     else if (emailType == "goalAchieved") {
+      // add user's name and goal amount and the saved amount to the email content
       emailContent = `
       <div style="font-family: Arial, sans-serif; background-color: #f8f8f8">
       <div
@@ -182,13 +185,15 @@ const sendEmail = async ({
           e-Financer
         </h1>
       </div>
+
       <div style="background-color: #ffffff; padding: 20px; border-radius: 5px">
         <p style="text-align: center">Hi ${user.name},</p>
         <h1 style="text-align: center; color: #333">
-          Goal Achieved
+          Congratulations! You have achieved your goal.
         </h1>
         <p style="text-align: center; color: #333">
-          Congratulations! You have achieved your goal.
+          You have successfully saved ${props.savedAmount} out of your goal
+          amount of ${props.goalAmount}.
         </p>
         <div style="text-align: center">
           <p style="color: #333; margin-top: 2rem">
@@ -200,18 +205,18 @@ const sendEmail = async ({
             <br />
           </p>
         </div>
-      </div>
-    </div>
-        `;
+      `;
+
       mailOptions = {
         from: process.env.SEND_EMAIL,
         to: user.email,
-        subject: "Goal Achieved",
+        subject: "Congratulations! You have achieved your goal.",
         html: emailContent,
       };
     }
     // Send email when goal is not achieved
     else if (emailType == "goalNotAchieved") {
+      // add user's name and goal amount and the saved amount to the email content
       emailContent = `
       <div style="font-family: Arial, sans-serif; background-color: #f8f8f8">
       <div
@@ -227,13 +232,15 @@ const sendEmail = async ({
           e-Financer
         </h1>
       </div>
+
       <div style="background-color: #ffffff; padding: 20px; border-radius: 5px">
         <p style="text-align: center">Hi ${user.name},</p>
         <h1 style="text-align: center; color: #333">
-          Goal Not Achieved
+          You have not achieved your goal.
         </h1>
         <p style="text-align: center; color: #333">
-          You have not achieved your goal. Keep working hard.
+          You have saved ${props.savedAmount} out of your goal amount of
+          ${props.goalAmount}.
         </p>
         <div style="text-align: center">
           <p style="color: #333; margin-top: 2rem">
@@ -245,13 +252,12 @@ const sendEmail = async ({
             <br />
           </p>
         </div>
-      </div>
-    </div>
-        `;
+      `;
+
       mailOptions = {
         from: process.env.SEND_EMAIL,
         to: user.email,
-        subject: "Goal Not Achieved",
+        subject: "You have not achieved your goal.",
         html: emailContent,
       };
     }

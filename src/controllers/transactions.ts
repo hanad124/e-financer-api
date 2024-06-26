@@ -30,64 +30,54 @@ export const createTransaction = async (req: Request, res: Response) => {
       },
     });
 
-    // If the transaction type is INCOME, update all goals for the user
-    //   if (type === "INCOME") {
-    //     const goals = await prisma.goal.findMany({ where: { userId } });
-    //     let remainingAmount = amount;
+    // if (type === 'INCOME') {
+    //   // Get all ongoing goals for the user
+    //   const goals = await prisma.goal.findMany({
+    //     where: {
+    //       userId: userId,
+    //       achieved: false,
+    //     },
+    //   });
 
-    //     for (const goal of goals) {
-    //       // let remainingAmount = amount - goal.savedAmount;
-    //       if (remainingAmount <= 0) break;
+    //   // Update each goal's savedAmount and check if it has reached its targetAmount
+    //   for (const goal of goals) {
+    //     const newSavedAmount = goal.savedAmount + amount;
+    //     const isAchieved = newSavedAmount >= goal.amount;
 
-    //       const amountNeeded = goal.amount - goal.savedAmount;
-    //       if (amountNeeded > 0) {
-    //         const amountToAdd = Math.min(amountNeeded, remainingAmount);
-    //         await prisma.goal.update({
-    //           where: { id: goal.id },
-    //           data: { savedAmount: goal.savedAmount + amountToAdd },
-    //         });
-    //         remainingAmount -= amountToAdd;
-    //       }
-    //     }
-    //  }
+    //     await prisma.goal.update({
+    //       where: { id: goal.id },
+    //       data: {
+    //         savedAmount: newSavedAmount,
+    //         achieved: isAchieved,
+    //       },
+    //     });
+    //   }
+    // }
 
     if (type === "INCOME") {
-      const goals = await prisma.goal.findMany({ where: { userId } });
-      let remainingAmount = amount;
-      let updateOperations = [];
+      // Get all ongoing goals for the user
+      const goals = await prisma.goal.findMany({
+        where: {
+          userId: userId,
+          achieved: false,
+        },
+      });
 
+      // Update each goal's savedAmount and check if it has reached its targetAmount
       for (const goal of goals) {
-        if (goal.savedAmount < goal.amount) {
-          const amountNeeded = goal.amount - goal.savedAmount;
-          if (amountNeeded > 0 && remainingAmount > 0) {
-            const amountToAdd = Math.min(remainingAmount, amountNeeded);
-            const newSavedAmount = goal.savedAmount + amountToAdd;
-            remainingAmount -= amountToAdd;
+        const remainingAmount = goal.amount - goal.savedAmount;
+        const amountToAdd = Math.min(amount, remainingAmount);
+        const newSavedAmount = goal.savedAmount + amountToAdd;
+        const isAchieved = newSavedAmount >= goal.amount;
 
-            // Prepare update operation, do not execute it yet
-            updateOperations.push(
-              prisma.goal.update({
-                where: { id: goal.id },
-                data: { savedAmount: newSavedAmount },
-              })
-            );
-          }
-        }
-
-        // Stop preparing further updates if no remaining amount is left
-        if (remainingAmount <= 0) {
-          break;
-        }
-      }
-
-      // Execute all update operations in parallel
-      await Promise.all(updateOperations)
-        .then(() => {
-          console.log("All updates completed successfully.");
-        })
-        .catch((error) => {
-          console.error("Error updating goals:", error);
+        await prisma.goal.update({
+          where: { id: goal.id },
+          data: {
+            savedAmount: newSavedAmount,
+            achieved: isAchieved,
+          },
         });
+      }
     }
 
     return res.json({

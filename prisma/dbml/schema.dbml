@@ -90,6 +90,7 @@ Table Goal {
   amount Float [not null]
   targetDate DateTime [not null]
   icon String [default: 'https://img.icons8.com/?size=100&id=20884&format=png&color=6957E7']
+  achieved Boolean [not null, default: false]
   userId String [not null]
   savedAmount Float [not null, default: 0]
   createdAt DateTime [default: `now()`, not null]

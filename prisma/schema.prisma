@@ -118,9 +118,10 @@ model Goal {
   amount        Float
   targetDate    DateTime
   icon         String? @default("https://img.icons8.com/?size=100&id=20884&format=png&color=6957E7")
-  // goalType      GoalType
+  achieved      Boolean  @default(false)
   userId        String   @db.ObjectId
-  savedAmount   Float    @default(0.0)   // Field to store saved amount
+  savedAmount   Float    @default(0.0)  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
