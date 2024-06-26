@@ -106,7 +106,7 @@ const sendEmail = async ({
         subject: "Verify Your Email Address",
         html: emailContent,
       };
-    } else {
+    } else if (emailType == "forgotpassword") {
       emailContent = `
       <div style="font-family: Arial, sans-serif; background-color: #f8f8f8">
       <div
@@ -162,6 +162,96 @@ const sendEmail = async ({
         from: process.env.SEND_EMAIL,
         to: user.email,
         subject: "Reset Your Password",
+        html: emailContent,
+      };
+    }
+    // Send email when gaol is achieved
+    else if (emailType == "goalAchieved") {
+      emailContent = `
+      <div style="font-family: Arial, sans-serif; background-color: #f8f8f8">
+      <div
+        style="
+          background: #6957E7;
+          width: 100;
+          padding: 3rem;
+          border-radius: 5px 5px 0px 0px;
+          text-align: center;
+        "
+      >
+        <h1 style="color: #fff; letter-spacing: 0.2rem; font-size: 2rem">
+          e-Financer
+        </h1>
+      </div>
+      <div style="background-color: #ffffff; padding: 20px; border-radius: 5px">
+        <p style="text-align: center">Hi ${user.name},</p>
+        <h1 style="text-align: center; color: #333">
+          Goal Achieved
+        </h1>
+        <p style="text-align: center; color: #333">
+          Congratulations! You have achieved your goal.
+        </p>
+        <div style="text-align: center">
+          <p style="color: #333; margin-top: 2rem">
+            If you did not create an account, no further action is required.
+          </p>
+
+          <p style="color: #333">
+            Regards,
+            <br />
+          </p>
+        </div>
+      </div>
+    </div>
+        `;
+      mailOptions = {
+        from: process.env.SEND_EMAIL,
+        to: user.email,
+        subject: "Goal Achieved",
+        html: emailContent,
+      };
+    }
+    // Send email when goal is not achieved
+    else if (emailType == "goalNotAchieved") {
+      emailContent = `
+      <div style="font-family: Arial, sans-serif; background-color: #f8f8f8">
+      <div
+        style="
+          background: #6957E7;
+          width: 100;
+          padding: 3rem;
+          border-radius: 5px 5px 0px 0px;
+          text-align: center;
+        "
+      >
+        <h1 style="color: #fff; letter-spacing: 0.2rem; font-size: 2rem">
+          e-Financer
+        </h1>
+      </div>
+      <div style="background-color: #ffffff; padding: 20px; border-radius: 5px">
+        <p style="text-align: center">Hi ${user.name},</p>
+        <h1 style="text-align: center; color: #333">
+          Goal Not Achieved
+        </h1>
+        <p style="text-align: center; color: #333">
+          You have not achieved your goal. Keep working hard.
+        </p>
+        <div style="text-align: center">
+          <p style="color: #333; margin-top: 2rem">
+            If you did not create an account, no further action is required.
+          </p>
+
+          <p style="color: #333">
+            Regards,
+            <br />
+          </p>
+        </div>
+      </div>
+    </div>
+        `;
+      mailOptions = {
+        from: process.env.SEND_EMAIL,
+        to: user.email,
+        subject: "Goal Not Achieved",
         html: emailContent,
       };
     }
