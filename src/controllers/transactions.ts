@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
+import { ImageUpload } from "../utils/upload";
 
 const prisma = new PrismaClient();
 
 // create transaction
 export const createTransaction = async (req: Request, res: Response) => {
-  const { title, description, amount, type, category, number } = req.body;
+  const { title, description, amount, type, category, number, receipt } =
+    req.body;
 
   const token = req.header("authorization")?.split(" ")[1];
 
@@ -18,6 +20,13 @@ export const createTransaction = async (req: Request, res: Response) => {
   const userId = (decoded as any).id;
 
   try {
+    // Upload receipt image
+    let receiptUrl = "";
+    if (receipt) {
+      const result = await ImageUpload(receipt);
+      receiptUrl = result;
+    }
+
     const transaction = await prisma.transactions.create({
       data: {
         title,
@@ -25,6 +34,7 @@ export const createTransaction = async (req: Request, res: Response) => {
         amount,
         number,
         type,
+        receipt: receiptUrl ? receiptUrl : undefined,
         categoryId: category,
         userId: userId,
       },
@@ -315,7 +325,6 @@ export const getTransactions = async (req: Request, res: Response) => {
 
   const userid = (decoded as any).id;
 
-  console.log("transactions: ", userid);
   try {
     const transactions = await prisma.transactions.findMany({
       where: { userId: userid },

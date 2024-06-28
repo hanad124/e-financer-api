@@ -53,6 +53,7 @@ model Transactions {
   amount      Float
   number    Int?
   type        TransactionType
+  receipt     String?
 
   categoryId String   @db.ObjectId
   userId     String   @db.ObjectId
@@ -119,6 +120,7 @@ model Goal {
   targetDate    DateTime
   icon         String? @default("https://img.icons8.com/?size=100&id=20884&format=png&color=6957E7")
   achieved      Boolean  @default(false)
+  emailSent     Boolean  @default(false)
   userId        String   @db.ObjectId
   savedAmount   Float    @default(0.0)  
 
