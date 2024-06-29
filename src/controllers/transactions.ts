@@ -10,6 +10,7 @@ export const createTransaction = async (req: Request, res: Response) => {
   const { title, description, amount, type, category, number, receipt } =
     req.body;
 
+
   const token = req.header("authorization")?.split(" ")[1];
 
   if (!token) {
@@ -178,23 +179,12 @@ export const updateTransaction = async (req: Request, res: Response) => {
         if (amountNeeded > 0) {
           const amountToAdd = Math.min(amountNeeded, remainingAmount);
 
-          console.log(
-            `Updating goal ${goal.id}. Current saved: ${goal.savedAmount}, Adding: ${amountToAdd}, Remaining amount: ${remainingAmount}`
-          );
-
           await prisma.goal.update({
             where: { id: goal.id },
             data: { savedAmount: goal.savedAmount + amountToAdd },
           });
           remainingAmount -= amountToAdd;
-
-          console.log(
-            `Goal ${goal.id} updated. New saved amount: ${
-              goal.savedAmount + amountToAdd
-            }, Remaining amount: ${remainingAmount}`
-          );
         } else {
-          console.log(`Goal ${goal.id} already fully funded.`);
         }
       }
     }
