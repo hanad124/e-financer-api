@@ -408,15 +408,8 @@ const updatePassword = async (req: Request, res: Response) => {
 
 // update profile
 const updateProfile = async (req: Request, res: Response) => {
-  const { name, avatar, description, email } = req.body;
+  const { name, avatar, description } = req.body;
 
-  console.log(
-    "name, avatar, description, email",
-    name,
-    avatar,
-    description,
-    email
-  );
   console.log("req.body", req.body);
   const token = req.header("authorization")?.split(" ")[1];
 
@@ -439,12 +432,11 @@ const updateProfile = async (req: Request, res: Response) => {
     }
 
     // Upload image to cloudinary
-    let avatarUrl = avatar;
-    if (avatar) {
-      const image = await ImageUpload(avatar as string);
+    // only take if the avatar is not empty or is base64
+    let avatarUrl = user.avatar;
+    if (avatar && avatar !== user.avatar) {
+      const image = await ImageUpload(avatar);
       avatarUrl = image;
-
-      console.log("image", image);
     }
 
     await prisma.user.update({
@@ -455,7 +447,7 @@ const updateProfile = async (req: Request, res: Response) => {
         name,
         avatar: avatarUrl,
         description,
-        email,
+        // email,
       },
     });
 
