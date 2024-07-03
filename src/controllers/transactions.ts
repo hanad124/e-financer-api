@@ -10,7 +10,6 @@ export const createTransaction = async (req: Request, res: Response) => {
   const { title, description, amount, type, category, number, receipt } =
     req.body;
 
-
   const token = req.header("authorization")?.split(" ")[1];
 
   if (!token) {
@@ -86,6 +85,7 @@ export const createTransaction = async (req: Request, res: Response) => {
           data: {
             savedAmount: newSavedAmount,
             achieved: isAchieved,
+            achievedDate: isAchieved ? new Date() : null,
           },
         });
       }
