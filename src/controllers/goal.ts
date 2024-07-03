@@ -141,17 +141,14 @@ export const getGoals = async (req: Request, res: Response) => {
 
     // Send email notification to user if goal is achieved or exceeded the target date
     goals.forEach(async (goal) => {
-      const savedAmount = goal.goalTransactions.reduce(
-        (acc, curr) => acc + curr.transaction.amount,
-        0
-      );
+      const savedAmount = goal.savedAmount;
 
       if (goal.achieved && !goal.emailSent) {
         console.log("Goal achieved");
         await sendEmail({
           user: user,
           emailType: "goalAchieved",
-          props: { savedAmount, goalAmount: goal.amount },
+          props: { savedAmount, goalAmount: goal.amount, goalName: goal.name },
         });
 
         // Update goal to mark email as sent
@@ -164,7 +161,7 @@ export const getGoals = async (req: Request, res: Response) => {
         await sendEmail({
           user: user,
           emailType: "goalNotAchieved",
-          props: { savedAmount, goalAmount: goal.amount },
+          props: { savedAmount, goalAmount: goal.amount, goalName: goal.name },
         });
 
         // Update goal to mark email as sent

@@ -189,12 +189,16 @@ const sendEmail = async ({
       <div style="background-color: #ffffff; padding: 20px; border-radius: 5px">
         <p style="text-align: center">Hi ${user.name},</p>
         <h1 style="text-align: center; color: #333">
-          Congratulations! You have achieved your goal.
+          Congratulations! You have achieved your goal 
+          <span style="color: #6957E7;">
+             - ${props.goalName} -
+          </span>
         </h1>
         <p style="text-align: center; color: #333">
-          You have successfully saved ${props.savedAmount} out of your goal
-          amount of ${props.goalAmount}.
+          You have successfully saved <b style='color: #6957E7;'>${props.savedAmount}</b> out of your goal
+          amount of <b style='color: #6957E7;'>${props.goalAmount}</b>.
         </p>
+
         <div style="text-align: center">
           <p style="color: #333; margin-top: 2rem">
             If you did not create an account, no further action is required.
@@ -236,11 +240,14 @@ const sendEmail = async ({
       <div style="background-color: #ffffff; padding: 20px; border-radius: 5px">
         <p style="text-align: center">Hi ${user.name},</p>
         <h1 style="text-align: center; color: #333">
-          You have not achieved your goal.
+          You have not achieved your goal 
+          <span style="color: #6957E7;">
+             - ${props.goalName} -
+          </span>
         </h1>
         <p style="text-align: center; color: #333">
-          You have saved ${props.savedAmount} out of your goal amount of
-          ${props.goalAmount}.
+          You have saved <b style='color: #6957E7;'>${props.savedAmount}</b> out of your goal
+          amount of <b style='color: #6957E7;'>${props.goalAmount}</b>.
         </p>
         <div style="text-align: center">
           <p style="color: #333; margin-top: 2rem">
