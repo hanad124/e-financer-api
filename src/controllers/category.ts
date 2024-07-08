@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
+import getUserId from "../helpers/getUserId";
 
 const prisma = new PrismaClient();
 
@@ -8,12 +8,7 @@ const prisma = new PrismaClient();
 export const createCategory = async (req: Request, res: Response) => {
   const { name, icon } = req.body;
 
-  const token = req.header("authorization")?.split(" ")[1];
-
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-
-  const userid = (decoded as any).id;
+  const userid = getUserId(req);
 
   try {
     const existingCategory = await prisma.category.findFirst({
@@ -54,12 +49,7 @@ export const updateCategory = async (req: Request, res: Response) => {
 
   console.log("req.body: ", req.body);
 
-  const token = req.header("authorization")?.split(" ")[1];
-
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-
-  const userid = (decoded as any).id;
+  const userid = getUserId(req);
 
   try {
     // find category
@@ -99,12 +89,8 @@ export const updateCategory = async (req: Request, res: Response) => {
 // delete category
 export const deleteCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const token = req.header("authorization")?.split(" ")[1];
+  const userid = getUserId(req);
 
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-
-  const userid = (decoded as any).id;
   try {
     // find category
     const category = await prisma.category.findFirst({
@@ -136,46 +122,44 @@ export const deleteCategory = async (req: Request, res: Response) => {
 
 // get all categories
 export const getCategories = async (req: Request, res: Response) => {
-  const token = req.header("authorization")?.split(" ")[1];
-
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-
-  const userid = (decoded as any).id;
-  console.log("req.body: ", req.body);
-
-  if (!userid) {
-    return res
-      .status(400)
-      .json({ success: false, message: "user is required" });
-  }
-
   try {
-    const categories = await prisma.category.findMany({
-      where: { userId: userid },
-      include: {
-        icons: true,
-        transactions: true,
-      },
-    });
+    const userId = getUserId(req);
 
-    if (categories.length === 0) {
-      return res.json({ success: true, message: "No categories found" });
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User is required" });
     }
 
-    const categoriesWithTransactionCount = categories.map((category: any) => ({
-      ...category,
-      transactionCount: category.transactions.length,
-    }));
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
 
-    console.log(
-      "categoriesWithTransactionCount: ",
-      categoriesWithTransactionCount
-    );
+    const categories = await prisma.category.findMany({
+      where: { userId: userId },
+      select: {
+        id: true,
+        name: true,
+        icons: true,
+        _count: {
+          select: { transactions: true },
+        },
+      },
+      skip: skip,
+      take: Number(limit),
+    });
+
+    // if (categories.length === 0) {
+    //   return res.json({ success: true, message: "No categories found" });
+    // }
+
+    // const categoriesWithTransactionCount = categories.map((category) => ({
+    //   ...category,
+    //   transactionCount: category._count.transactions,
+    // }));
 
     return res.json({
       success: true,
-      categories: categoriesWithTransactionCount,
+      categories: categories,
       message: "Categories fetched successfully!",
     });
   } catch (error) {
@@ -189,12 +173,8 @@ export const getCategories = async (req: Request, res: Response) => {
 // get category by id
 export const getCategoryById = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const token = req.header("authorization")?.split(" ")[1];
 
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-
-  const userid = (decoded as any).id;
+  const userid = getUserId(req);
   try {
     const category = await prisma.category.findFirst({
       where: {

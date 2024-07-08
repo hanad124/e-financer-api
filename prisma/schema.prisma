@@ -21,6 +21,7 @@ model User {
   isVarified  Boolean @default(false)
   avatar      String? @default("https://avatars.githubusercontent.com/u/77287775?v=4")
   description String?
+  expoPushToken String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

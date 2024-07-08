@@ -2,17 +2,13 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/sendEmail";
-
-import { initializeApp, applicationDefault } from "firebase-admin/app";
-// import { getMessaging } from "firebase-admin/messaging";
-
-process.env.GOOGLE_APPLICATION_CREDENTIALS;
-initializeApp({
-  credential: applicationDefault(),
-  projectId: "e-financer",
-});
+import { sendPushNotification } from "../utils/notificationService";
 
 const prisma = new PrismaClient();
+
+interface DecodedToken {
+  id: string;
+}
 
 export const createGoal = async (req: Request, res: Response) => {
   const { name, amount, targetDate, icon } = req.body;
@@ -106,6 +102,88 @@ export const updateGoal = async (req: Request, res: Response) => {
   }
 };
 
+// export const getGoals = async (req: Request, res: Response) => {
+//   const token = req.header("authorization")?.split(" ")[1];
+
+//   if (!token) {
+//     return res.status(401).json({ message: "Unauthorized" });
+//   }
+
+//   // Decode token
+//   const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+//   const userId = (decoded as any).id;
+
+//   try {
+//     // Fetch goals for the user
+//     const goals = await prisma.goal.findMany({
+//       where: { userId },
+//       include: {
+//         goalTransactions: {
+//           include: {
+//             transaction: true,
+//           },
+//         },
+//       },
+//     });
+
+//     // get user by id
+//     const user = await prisma.user.findFirst({
+//       where: { id: userId },
+//     });
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Send email notification to user if goal is achieved or exceeded the target date
+//     goals.forEach(async (goal) => {
+//       const savedAmount = goal.savedAmount;
+
+//       if (goal.achieved && !goal.emailSent) {
+//         console.log("Goal achieved");
+//         await sendEmail({
+//           user: user,
+//           emailType: "goalAchieved",
+//           props: { savedAmount, goalAmount: goal.amount, goalName: goal.name },
+//         });
+
+//         // Update goal to mark email as sent
+//         await prisma.goal.update({
+//           where: { id: goal.id },
+//           data: { emailSent: true },
+//         });
+//       } else if (!goal.achieved && goal.targetDate < new Date()) {
+//         console.log("Goal not achieved");
+//         await sendEmail({
+//           user: user,
+//           emailType: "goalNotAchieved",
+//           props: { savedAmount, goalAmount: goal.amount, goalName: goal.name },
+//         });
+
+//         // Update goal to mark email as sent
+//         await prisma.goal.update({
+//           where: { id: goal.id },
+//           data: { emailSent: true },
+//         });
+//       }
+//     });
+
+//     return res.json({
+//       success: true,
+//       message: "Goals fetched successfully",
+//       goals,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       error: `Internal Server Error: ${error}`,
+//       success: false,
+//       message: `Failed to fetch goals: ${error}`,
+//     });
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// };
+
 export const getGoals = async (req: Request, res: Response) => {
   const token = req.header("authorization")?.split(" ")[1];
 
@@ -113,9 +191,17 @@ export const getGoals = async (req: Request, res: Response) => {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  // Decode token
-  const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-  const userId = (decoded as any).id;
+  let decoded: DecodedToken;
+  try {
+    decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as DecodedToken;
+  } catch (err) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const userId = decoded.id;
 
   try {
     // Fetch goals for the user
@@ -130,7 +216,7 @@ export const getGoals = async (req: Request, res: Response) => {
       },
     });
 
-    // get user by id
+    // Get user by id
     const user = await prisma.user.findFirst({
       where: { id: userId },
     });
@@ -139,8 +225,8 @@ export const getGoals = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Send email notification to user if goal is achieved or exceeded the target date
-    goals.forEach(async (goal) => {
+    // Send email and push notification to user if goal is achieved or exceeded the target date
+    for (const goal of goals) {
       const savedAmount = goal.savedAmount;
 
       if (goal.achieved && !goal.emailSent) {
@@ -150,6 +236,14 @@ export const getGoals = async (req: Request, res: Response) => {
           emailType: "goalAchieved",
           props: { savedAmount, goalAmount: goal.amount, goalName: goal.name },
         });
+
+        // Send push notification
+        if (user.expoPushToken) {
+          await sendPushNotification(
+            user.expoPushToken,
+            `Congratulations! You have achieved your goal: ${goal.name}`
+          );
+        }
 
         // Update goal to mark email as sent
         await prisma.goal.update({
@@ -164,13 +258,21 @@ export const getGoals = async (req: Request, res: Response) => {
           props: { savedAmount, goalAmount: goal.amount, goalName: goal.name },
         });
 
+        // Send push notification
+        if (user.expoPushToken) {
+          await sendPushNotification(
+            user.expoPushToken,
+            `Unfortunately, you have not achieved your goal: ${goal.name}`
+          );
+        }
+
         // Update goal to mark email as sent
         await prisma.goal.update({
           where: { id: goal.id },
           data: { emailSent: true },
         });
       }
-    });
+    }
 
     return res.json({
       success: true,

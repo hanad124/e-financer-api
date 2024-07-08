@@ -12,6 +12,7 @@ import {
   updateEmail,
   getUserInfo,
   updateProfile,
+  savePushToken,
 } from "../controllers";
 
 import { isAuthenticated, isOwner } from "../middlewares/authMiddleware";
@@ -29,5 +30,6 @@ authRouter.post("/reset-password", resetPassword);
 authRouter.post("/update-password", isAuthenticated, updatePassword);
 authRouter.post("/update-email", isAuthenticated, updateEmail);
 authRouter.patch("/update-profile", isAuthenticated, updateProfile);
+authRouter.post("/save-push-token", isAuthenticated, savePushToken);
 
 export { authRouter };
