@@ -4,7 +4,8 @@ let expo = new Expo();
 
 export async function sendPushNotification(
   expoPushToken: string,
-  message: string
+  message: string,
+  title: string
 ) {
   if (!Expo.isExpoPushToken(expoPushToken)) {
     console.error(`Push token ${expoPushToken} is not a valid Expo push token`);
@@ -17,6 +18,7 @@ export async function sendPushNotification(
     {
       to: expoPushToken,
       sound: "default",
+      title: title,
       body: message,
       data: { withSome: "data" },
     },

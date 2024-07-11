@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/sendEmail";
 import { sendPushNotification } from "../utils/notificationService";
+// import getUserId from "../helpers/getUserId";
 
 const prisma = new PrismaClient();
 
@@ -241,7 +242,8 @@ export const getGoals = async (req: Request, res: Response) => {
         if (user.expoPushToken) {
           await sendPushNotification(
             user.expoPushToken,
-            `Congratulations! You have achieved your goal: ${goal.name}`
+            `Congratulations! You have achieved your goal: ${goal.name}`,
+            "Goal achieved"
           );
         }
 
@@ -262,7 +264,8 @@ export const getGoals = async (req: Request, res: Response) => {
         if (user.expoPushToken) {
           await sendPushNotification(
             user.expoPushToken,
-            `Unfortunately, you have not achieved your goal: ${goal.name}`
+            `Unfortunately, you have not achieved your goal: ${goal.name}`,
+            "Goal not achieved"
           );
         }
 
@@ -292,6 +295,7 @@ export const getGoals = async (req: Request, res: Response) => {
 
 export const deleteGoal = async (req: Request, res: Response) => {
   const { id } = req.params;
+  console.log("req.params", req.params);
   const token = req.header("authorization")?.split(" ")[1];
 
   // decode token
