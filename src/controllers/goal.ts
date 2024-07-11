@@ -243,7 +243,8 @@ export const getGoals = async (req: Request, res: Response) => {
           await sendPushNotification(
             user.expoPushToken,
             `Congratulations! You have achieved your goal: ${goal.name}`,
-            "Goal achieved"
+            "Goal achieved",
+            "goals"
           );
         }
 
@@ -265,7 +266,8 @@ export const getGoals = async (req: Request, res: Response) => {
           await sendPushNotification(
             user.expoPushToken,
             `Unfortunately, you have not achieved your goal: ${goal.name}`,
-            "Goal not achieved"
+            "Goal not achieved",
+            "goals"
           );
         }
 
