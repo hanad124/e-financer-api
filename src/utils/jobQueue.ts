@@ -2,7 +2,6 @@
 import Queue from "bull";
 import { PrismaClient } from "@prisma/client";
 
-
 const prisma = new PrismaClient();
 
 const updateGoalsQueue = new Queue("updateGoals");

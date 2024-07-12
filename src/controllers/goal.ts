@@ -232,6 +232,13 @@ export const getGoals = async (req: Request, res: Response) => {
 
       if (goal.achieved && !goal.emailSent) {
         console.log("Goal achieved");
+
+        // Update goal to mark email as sent before sending notifications
+        await prisma.goal.update({
+          where: { id: goal.id },
+          data: { emailSent: true },
+        });
+
         await sendEmail({
           user: user,
           emailType: "goalAchieved",
@@ -244,17 +251,22 @@ export const getGoals = async (req: Request, res: Response) => {
             user.expoPushToken,
             `Congratulations! You have achieved your goal: ${goal.name}`,
             "Goal achieved",
-            "/(tabs)goals"
+            "/transactions"
           );
         }
+      } else if (
+        !goal.achieved &&
+        goal.targetDate < new Date() &&
+        !goal.emailSent
+      ) {
+        console.log("Goal not achieved");
 
-        // Update goal to mark email as sent
+        // Update goal to mark email as sent before sending notifications
         await prisma.goal.update({
           where: { id: goal.id },
           data: { emailSent: true },
         });
-      } else if (!goal.achieved && goal.targetDate < new Date()) {
-        console.log("Goal not achieved");
+
         await sendEmail({
           user: user,
           emailType: "goalNotAchieved",
@@ -267,15 +279,9 @@ export const getGoals = async (req: Request, res: Response) => {
             user.expoPushToken,
             `Unfortunately, you have not achieved your goal: ${goal.name}`,
             "Goal not achieved",
-            "/(tabs)goals"
+            "/transactions"
           );
         }
-
-        // Update goal to mark email as sent
-        await prisma.goal.update({
-          where: { id: goal.id },
-          data: { emailSent: true },
-        });
       }
     }
 
