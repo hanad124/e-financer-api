@@ -2,31 +2,93 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { ImageUpload } from "../utils/upload";
+import getUserId from "../helpers/getUserId";
+import { addJobToQueue } from "../utils/jobQueue";
 
 const prisma = new PrismaClient();
 
 // create transaction
+// export const createTransaction = async (req: Request, res: Response) => {
+//   const { title, description, amount, type, category, number, receipt } =
+//     req.body;
+
+//   const userId = getUserId(req);
+
+//   try {
+//     // Upload receipt image
+//     let receiptUrl = "";
+//     if (receipt) {
+//       const result = await ImageUpload(receipt);
+//       receiptUrl = result;
+//     }
+
+//     const transaction = await prisma.transactions.create({
+//       data: {
+//         title,
+//         description,
+//         amount,
+//         number,
+//         type,
+//         receipt: receiptUrl ? receiptUrl : undefined,
+//         categoryId: category,
+//         userId: userId,
+//       },
+//     });
+
+//     if (type === "INCOME") {
+//       // Get all ongoing goals for the user
+//       const goals = await prisma.goal.findMany({
+//         where: {
+//           userId: userId,
+//           achieved: false,
+//         },
+//       });
+
+//       // Update each goal's savedAmount and check if it has reached its targetAmount
+//       for (const goal of goals) {
+//         const remainingAmount = goal.amount - goal.savedAmount;
+//         const amountToAdd = Math.min(amount, remainingAmount);
+//         const newSavedAmount = goal.savedAmount + amountToAdd;
+//         const isAchieved = newSavedAmount >= goal.amount;
+
+//         await prisma.goal.update({
+//           where: { id: goal.id },
+//           data: {
+//             savedAmount: newSavedAmount,
+//             achieved: isAchieved,
+//             achievedDate: isAchieved ? new Date() : null,
+//           },
+//         });
+//       }
+//     }
+
+//     return res.json({
+//       success: true,
+//       message: "Transaction created successfully",
+//       transaction,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       error: `Internal Server Error: ${error.message}`,
+//       success: false,
+//       message: `Transaction creation failed: ${error.message}`,
+//     });
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// };
+
 export const createTransaction = async (req: Request, res: Response) => {
   const { title, description, amount, type, category, number, receipt } =
     req.body;
 
-  const token = req.header("authorization")?.split(" ")[1];
-
-  if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-  const userId = (decoded as any).id;
+  const userId = getUserId(req);
 
   try {
-    // Upload receipt image
-    let receiptUrl = "";
-    if (receipt) {
-      const result = await ImageUpload(receipt);
-      receiptUrl = result;
-    }
+    // Start image upload in the background
+    const uploadPromise = receipt ? ImageUpload(receipt) : Promise.resolve("");
 
+    // Create transaction
     const transaction = await prisma.transactions.create({
       data: {
         title,
@@ -34,38 +96,15 @@ export const createTransaction = async (req: Request, res: Response) => {
         amount,
         number,
         type,
-        receipt: receiptUrl ? receiptUrl : undefined,
+        receipt: receipt ? await uploadPromise : undefined,
         categoryId: category,
         userId: userId,
       },
     });
 
-
+    // Offload goal updates to a background job if the transaction is an INCOME type
     if (type === "INCOME") {
-      // Get all ongoing goals for the user
-      const goals = await prisma.goal.findMany({
-        where: {
-          userId: userId,
-          achieved: false,
-        },
-      });
-
-      // Update each goal's savedAmount and check if it has reached its targetAmount
-      for (const goal of goals) {
-        const remainingAmount = goal.amount - goal.savedAmount;
-        const amountToAdd = Math.min(amount, remainingAmount);
-        const newSavedAmount = goal.savedAmount + amountToAdd;
-        const isAchieved = newSavedAmount >= goal.amount;
-
-        await prisma.goal.update({
-          where: { id: goal.id },
-          data: {
-            savedAmount: newSavedAmount,
-            achieved: isAchieved,
-            achievedDate: isAchieved ? new Date() : null,
-          },
-        });
-      }
+      addJobToQueue("updateGoals", { userId, amount });
     }
 
     return res.json({
@@ -223,65 +262,6 @@ export const deleteTransaction = async (req: Request, res: Response) => {
     await prisma.$disconnect();
   }
 };
-
-// // get all transactions
-// export const getTransactions = async (req: Request, res: Response) => {
-//   const token = req.header("authorization")?.split(" ")[1];
-
-//   // decode token
-//   const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-
-//   const userid = (decoded as any).id;
-
-//   console.log("userid: ", userid);
-//   try {
-//     const transactions = await prisma.transactions.findMany({
-//       where: { userId: userid },
-//       include: {
-//         category: true,
-//       },
-//     });
-
-//     // prepare sorted transactions by type like income and expense and their total
-//     const incomeTransactions = transactions.filter(
-//       (transaction) => transaction.type === "INCOME"
-//     );
-//     const expenseTransactions = transactions.filter(
-//       (transaction) => transaction.type === "EXPENSE"
-//     );
-
-//     const totalIncome = incomeTransactions.reduce(
-//       (acc, transaction) => acc + transaction.amount,
-//       0
-//     );
-
-//     const totalExpense = expenseTransactions.reduce(
-//       (acc, transaction) => acc + transaction.amount,
-//       0
-//     );
-
-//     const totalBalance = totalIncome - totalExpense;
-
-//       // make monthly expense,its like start expense of month and end of month expense
-
-//     return res.json({
-//       success: true,
-//       message: "Transactions fetched successfully",
-//       transactions,
-//       totalIncome,
-//       totalExpense,
-//       totalBalance,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       error: "Internal Server Error",
-//       success: false,
-//       message: "Transaction fetch failed",
-//     });
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// };
 
 // get all transactions
 export const getTransactions = async (req: Request, res: Response) => {

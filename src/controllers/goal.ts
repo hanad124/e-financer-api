@@ -244,7 +244,7 @@ export const getGoals = async (req: Request, res: Response) => {
             user.expoPushToken,
             `Congratulations! You have achieved your goal: ${goal.name}`,
             "Goal achieved",
-            "goals"
+            "/(tabs)goals"
           );
         }
 
@@ -267,7 +267,7 @@ export const getGoals = async (req: Request, res: Response) => {
             user.expoPushToken,
             `Unfortunately, you have not achieved your goal: ${goal.name}`,
             "Goal not achieved",
-            "goals"
+            "/(tabs)goals"
           );
         }
 
