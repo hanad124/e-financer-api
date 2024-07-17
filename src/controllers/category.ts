@@ -152,14 +152,14 @@ export const getCategories = async (req: Request, res: Response) => {
     //   return res.json({ success: true, message: "No categories found" });
     // }
 
-    // const categoriesWithTransactionCount = categories.map((category) => ({
-    //   ...category,
-    //   transactionCount: category._count.transactions,
-    // }));
+    const categoriesWithTransactionCount = categories.map((category) => ({
+      ...category,
+      transactionCount: category._count.transactions,
+    }));
 
     return res.json({
       success: true,
-      categories: categories,
+      categories: categoriesWithTransactionCount,
       message: "Categories fetched successfully!",
     });
   } catch (error) {

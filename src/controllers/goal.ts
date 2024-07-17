@@ -1,27 +1,15 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/sendEmail";
+import getUserId from "../helpers/getUserId";
 import { sendPushNotification } from "../utils/notificationService";
 // import getUserId from "../helpers/getUserId";
 
 const prisma = new PrismaClient();
 
-interface DecodedToken {
-  id: string;
-}
-
 export const createGoal = async (req: Request, res: Response) => {
   const { name, amount, targetDate, icon } = req.body;
-  const token = req.header("authorization")?.split(" ")[1];
-
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-
-  const userid = (decoded as any).id;
-
-  console.log("userid", userid);
-
+  const userId = getUserId(req);
   try {
     const goal = await prisma.goal.create({
       data: {
@@ -34,7 +22,7 @@ export const createGoal = async (req: Request, res: Response) => {
           icon ||
           "https://img.icons8.com/?size=100&id=20884&format=png&color=6957E7",
 
-        userId: userid,
+        userId: userId,
       },
     });
 
@@ -59,12 +47,7 @@ export const updateGoal = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, amount, targetDate, icon } = req.body;
 
-  const token = req.header("authorization")?.split(" ")[1];
-
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-
-  const userid = (decoded as any).id;
+  const userid = getUserId(req);
 
   try {
     // check if goal exists
@@ -186,23 +169,12 @@ export const updateGoal = async (req: Request, res: Response) => {
 // };
 
 export const getGoals = async (req: Request, res: Response) => {
-  const token = req.header("authorization")?.split(" ")[1];
+  const userId = getUserId(req);
 
-  if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-
-  let decoded: DecodedToken;
   try {
-    decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as DecodedToken;
   } catch (err) {
     return res.status(401).json({ message: "Unauthorized" });
   }
-
-  const userId = decoded.id;
 
   try {
     // Fetch goals for the user
@@ -303,13 +275,8 @@ export const getGoals = async (req: Request, res: Response) => {
 
 export const deleteGoal = async (req: Request, res: Response) => {
   const { id } = req.params;
-  console.log("req.params", req.params);
-  const token = req.header("authorization")?.split(" ")[1];
 
-  // decode token
-  const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-
-  const userid = (decoded as any).id;
+  const userid = getUserId(req);
   try {
     // check if goal exists
     const goal = await prisma.goal.findFirst({

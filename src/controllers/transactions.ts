@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { ImageUpload } from "../utils/upload";
 import getUserId from "../helpers/getUserId";
-import { addJobToQueue } from "../utils/jobQueue";
+// import { addJobToQueue } from "../utils/jobQueue";
 
 const prisma = new PrismaClient();
 
@@ -278,7 +278,30 @@ export const updateTransaction = async (req: Request, res: Response) => {
 
     // Offload goal updates to a background job if the transaction is an INCOME type
     if (type === "INCOME") {
-      addJobToQueue("updateGoals", { userId, amount });
+      // Get all ongoing goals for the user
+      const goals = await prisma.goal.findMany({
+        where: {
+          userId: userId,
+          achieved: false,
+        },
+      });
+
+      // Update each goal's savedAmount and check if it has reached its targetAmount
+      for (const goal of goals) {
+        const remainingAmount = goal.amount - goal.savedAmount;
+        const amountToAdd = Math.min(amount, remainingAmount);
+        const newSavedAmount = goal.savedAmount + amountToAdd;
+        const isAchieved = newSavedAmount >= goal.amount;
+
+        await prisma.goal.update({
+          where: { id: goal.id },
+          data: {
+            savedAmount: newSavedAmount,
+            achieved: isAchieved,
+            achievedDate: isAchieved ? new Date() : null,
+          },
+        });
+      }
     }
 
     return res.json({
