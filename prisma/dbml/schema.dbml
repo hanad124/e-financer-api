@@ -15,9 +15,9 @@ Table User {
   updatedAt DateTime [not null]
   tokens Token [not null]
   transactions Transactions [not null]
-  Category Category [not null]
-  Budget Budget [not null]
-  Goal Goal [not null]
+  categories Category [not null]
+  budgets Budget [not null]
+  goals Goal [not null]
 }
 
 Table Token {
@@ -43,9 +43,9 @@ Table Transactions {
   updatedAt DateTime [not null]
   user User [not null]
   category Category [not null]
-  Budget Budget
   budgetId String
   GoalTransaction GoalTransaction [not null]
+  Budget Budget
 }
 
 Table Category {
@@ -66,24 +66,7 @@ Table Icon {
   icon String [not null, default: 'https://cdn-icons-png.flaticon.com/512/2920/2920320.png']
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  category Category [not null]
-}
-
-Table Budget {
-  id String [pk]
-  name String [not null]
-  amount Float [not null]
-  startDate DateTime [not null]
-  endDate DateTime [not null]
-  userId String [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  user User [not null]
-  transactions Transactions [not null]
-
-  indexes {
-    (name, userId) [unique]
-  }
+  categories Category [not null]
 }
 
 Table Goal {
@@ -115,6 +98,22 @@ Table GoalTransaction {
   transaction Transactions [not null]
 }
 
+Table Budget {
+  id String [pk]
+  name String [not null]
+  amount Float [not null]
+  description String [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  user User [not null]
+  transactions Transactions [not null]
+
+  indexes {
+    (name, userId) [unique]
+  }
+}
+
 Enum TransactionType {
   INCOME
   EXPENSE
@@ -138,10 +137,10 @@ Ref: Category.userId > User.id [delete: Cascade]
 
 Ref: Category.iconId > Icon.id
 
-Ref: Budget.userId > User.id [delete: Cascade]
-
 Ref: Goal.userId > User.id [delete: Cascade]
 
 Ref: GoalTransaction.goalId > Goal.id
 
 Ref: GoalTransaction.transactionId > Transactions.id
+
+Ref: Budget.userId > User.id [delete: Cascade]
