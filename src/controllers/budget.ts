@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 // create budget
 export const createBudget = async (req: Request, res: Response) => {
-  const { name, amount, description } = req.body;
+  const { name, amount, description, icon } = req.body;
   const userId = getUserId(req);
 
   try {
@@ -25,6 +25,9 @@ export const createBudget = async (req: Request, res: Response) => {
         name,
         amount,
         description,
+        icon:
+          icon ||
+          "https://img.icons8.com/?size=100&id=484&format=png&color=6957E7",
         userId,
       },
     });
@@ -50,7 +53,7 @@ export const createBudget = async (req: Request, res: Response) => {
 export const updateBudget = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, amount, description } = req.body;
+    const { name, amount, description, icon } = req.body;
 
     const userId = getUserId(req);
 
@@ -68,9 +71,13 @@ export const updateBudget = async (req: Request, res: Response) => {
     const updatedBudget = await prisma.budget.update({
       where: { id },
       data: {
-        name: name || budget.name,
-        amount: amount || budget.amount,
-        description: description || budget.description,
+        name,
+        amount,
+        description,
+        icon:
+          icon ||
+          "https://img.icons8.com/?size=100&id=484&format=png&color=6957E7",
+        userId,
       },
     });
 

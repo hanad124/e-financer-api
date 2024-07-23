@@ -93,6 +93,7 @@ model Icon {
 
   // relations
   categories Category[]
+  Budget     Budget[]
 }
 
 model Goal {
@@ -128,11 +129,12 @@ model GoalTransaction {
 }
 
 model Budget {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   amount      Float
   description String
-  userId      String @db.ObjectId
+  icon        String? @default("https://img.icons8.com/?size=100&id=484&format=png&color=6957E7")
+  userId      String  @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -140,6 +142,8 @@ model Budget {
   // relations
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transactions[]
+  Icon         Icon?          @relation(fields: [iconId], references: [id])
+  iconId       String?        @db.ObjectId
 
   @@unique([name, userId]) // A user can't have duplicate budget names
 }

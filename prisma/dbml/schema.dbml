@@ -67,6 +67,7 @@ Table Icon {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   categories Category [not null]
+  Budget Budget [not null]
 }
 
 Table Goal {
@@ -103,11 +104,14 @@ Table Budget {
   name String [not null]
   amount Float [not null]
   description String [not null]
+  icon String [default: 'https://img.icons8.com/?size=100&id=484&format=png&color=6957E7']
   userId String [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   user User [not null]
   transactions Transactions [not null]
+  Icon Icon
+  iconId String
 
   indexes {
     (name, userId) [unique]
@@ -144,3 +148,5 @@ Ref: GoalTransaction.goalId > Goal.id
 Ref: GoalTransaction.transactionId > Transactions.id
 
 Ref: Budget.userId > User.id [delete: Cascade]
+
+Ref: Budget.iconId > Icon.id
