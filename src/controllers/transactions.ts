@@ -79,8 +79,16 @@ const prisma = new PrismaClient();
 // };
 
 export const createTransaction = async (req: Request, res: Response) => {
-  const { title, description, amount, type, category, number, receipt } =
-    req.body;
+  const {
+    title,
+    description,
+    amount,
+    type,
+    category,
+    number,
+    receipt,
+    budgetId,
+  } = req.body;
 
   const userId = getUserId(req);
 
@@ -101,6 +109,29 @@ export const createTransaction = async (req: Request, res: Response) => {
         userId: userId,
       },
     });
+
+    // update budget
+    const budget = await prisma.budget.findFirst({
+      where: {
+        userId,
+        id: budgetId,
+      },
+    });
+
+    if (budget) {
+      const updatedLeftToSpend = budget.leftToSpend - amount;
+      const isBudgetCompleted = updatedLeftToSpend <= 0;
+
+      await prisma.budget.update({
+        where: {
+          id: budgetId,
+        },
+        data: {
+          leftToSpend: updatedLeftToSpend,
+          isCompleted: isBudgetCompleted,
+        },
+      });
+    }
 
     if (type === "INCOME") {
       // Get all ongoing goals for the user
@@ -128,7 +159,6 @@ export const createTransaction = async (req: Request, res: Response) => {
         });
       }
     }
-    // addJobToQueue("updateGoals", { userId, amount });
 
     return res.json({
       success: true,

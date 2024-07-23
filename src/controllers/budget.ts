@@ -24,6 +24,7 @@ export const createBudget = async (req: Request, res: Response) => {
       data: {
         name,
         amount,
+        leftToSpend: amount,
         description,
         icon:
           icon ||
