@@ -7,77 +7,6 @@ import getUserId from "../helpers/getUserId";
 
 const prisma = new PrismaClient();
 
-// create transaction
-// export const createTransaction = async (req: Request, res: Response) => {
-//   const { title, description, amount, type, category, number, receipt } =
-//     req.body;
-
-//   const userId = getUserId(req);
-
-//   try {
-//     // Upload receipt image
-//     let receiptUrl = "";
-//     if (receipt) {
-//       const result = await ImageUpload(receipt);
-//       receiptUrl = result;
-//     }
-
-//     const transaction = await prisma.transactions.create({
-//       data: {
-//         title,
-//         description,
-//         amount,
-//         number,
-//         type,
-//         receipt: receiptUrl ? receiptUrl : undefined,
-//         categoryId: category,
-//         userId: userId,
-//       },
-//     });
-
-// if (type === "INCOME") {
-//   // Get all ongoing goals for the user
-//   const goals = await prisma.goal.findMany({
-//     where: {
-//       userId: userId,
-//       achieved: false,
-//     },
-//   });
-
-//   // Update each goal's savedAmount and check if it has reached its targetAmount
-//   for (const goal of goals) {
-//     const remainingAmount = goal.amount - goal.savedAmount;
-//     const amountToAdd = Math.min(amount, remainingAmount);
-//     const newSavedAmount = goal.savedAmount + amountToAdd;
-//     const isAchieved = newSavedAmount >= goal.amount;
-
-//     await prisma.goal.update({
-//       where: { id: goal.id },
-//       data: {
-//         savedAmount: newSavedAmount,
-//         achieved: isAchieved,
-//         achievedDate: isAchieved ? new Date() : null,
-//       },
-//     });
-//   }
-// }
-
-//     return res.json({
-//       success: true,
-//       message: "Transaction created successfully",
-//       transaction,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       error: `Internal Server Error: ${error.message}`,
-//       success: false,
-//       message: `Transaction creation failed: ${error.message}`,
-//     });
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// };
-
 export const createTransaction = async (req: Request, res: Response) => {
   const {
     title,
@@ -107,19 +36,37 @@ export const createTransaction = async (req: Request, res: Response) => {
         receipt: receipt ? await uploadPromise : undefined,
         categoryId: category,
         userId: userId,
+        budgetId: budgetId,
       },
     });
 
-    // update budget
     const budget = await prisma.budget.findFirst({
       where: {
-        userId,
+        userId: userId,
         id: budgetId,
       },
     });
 
+    console.log("budgetId::", budgetId);
+    console.log("budget::", budget);
+
     if (budget) {
-      const updatedLeftToSpend = budget.leftToSpend - amount;
+      let updatedLeftToSpend = budget.leftToSpend;
+
+      if (type === "INCOME") {
+        updatedLeftToSpend += amount;
+      } else if (type === "EXPENSE") {
+        if (amount > updatedLeftToSpend) {
+          console.log("expense amount::", amount);
+          return;
+          // return res.status(400).json({
+          //   success: false,
+          //   message: "Expense amount exceeds the available budget.",
+          // });
+        }
+        updatedLeftToSpend -= amount;
+      }
+
       const isBudgetCompleted = updatedLeftToSpend <= 0;
 
       await prisma.budget.update({
@@ -132,7 +79,6 @@ export const createTransaction = async (req: Request, res: Response) => {
         },
       });
     }
-
     if (type === "INCOME") {
       // Get all ongoing goals for the user
       const goals = await prisma.goal.findMany({

@@ -69,11 +69,31 @@ export const updateBudget = async (req: Request, res: Response) => {
       });
     }
 
+    let leftToSpend, isEditted;
+
+    if (amount) {
+      console.log("amount", amount);
+      console.log("current amount", budget.amount);
+      if (amount > budget.amount) {
+        console.log("amount is greater than current amount");
+        isEditted = true;
+        leftToSpend = budget.leftToSpend + (amount - budget.amount);
+      } else {
+        console.log("amount is less than current amount");
+        isEditted = true;
+        leftToSpend = budget.leftToSpend - (budget.amount - amount);
+      }
+    }
+
+    console.log("leftToSpend:", leftToSpend);
+
     const updatedBudget = await prisma.budget.update({
       where: { id },
       data: {
         name,
         amount,
+        leftToSpend,
+        isEditted: isEditted,
         description,
         icon:
           icon ||
@@ -99,7 +119,7 @@ export const updateBudget = async (req: Request, res: Response) => {
   }
 };
 
-// get all transactions
+// get all budgets
 export const getBudgets = async (req: Request, res: Response) => {
   try {
     const userId = getUserId(req);

@@ -32,7 +32,7 @@ Table Token {
 Table Transactions {
   id String [pk]
   title String [not null]
-  description String [not null]
+  description String
   amount Float [not null]
   number Int
   type TransactionType [not null]
@@ -108,6 +108,7 @@ Table Budget {
   userId String [not null]
   leftToSpend Float [not null, default: 0]
   isCompleted Boolean [not null, default: false]
+  isEditted Boolean [not null, default: false]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   user User [not null]
