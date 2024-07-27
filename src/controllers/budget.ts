@@ -127,7 +127,15 @@ export const getBudgets = async (req: Request, res: Response) => {
     const budgets = await prisma.budget.findMany({
       where: { userId },
       include: {
-        transactions: true,
+        transactions: {
+          include: {
+            category: {
+              include: {
+                icons: true,
+              },
+            },
+          },
+        },
       },
     });
 

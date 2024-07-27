@@ -17,6 +17,7 @@ export const createTransaction = async (req: Request, res: Response) => {
     number,
     receipt,
     budgetId,
+    goalId,
   } = req.body;
 
   const userId = getUserId(req);
@@ -47,10 +48,7 @@ export const createTransaction = async (req: Request, res: Response) => {
       },
     });
 
-    console.log("budgetId::", budgetId);
-    console.log("budget::", budget);
-
-    if (budget) {
+    if (budget && budgetId !== undefined) {
       let updatedLeftToSpend = budget.leftToSpend;
 
       if (type === "INCOME") {
@@ -79,17 +77,18 @@ export const createTransaction = async (req: Request, res: Response) => {
         },
       });
     }
-    if (type === "INCOME") {
-      // Get all ongoing goals for the user
-      const goals = await prisma.goal.findMany({
+
+    if (type === "INCOME" && goalId !== undefined) {
+      // Get the specific goal for the user
+      const goal = await prisma.goal.findFirst({
         where: {
+          id: goalId,
           userId: userId,
           achieved: false,
         },
       });
 
-      // Update each goal's savedAmount and check if it has reached its targetAmount
-      for (const goal of goals) {
+      if (goal) {
         const remainingAmount = goal.amount - goal.savedAmount;
         const amountToAdd = Math.min(amount, remainingAmount);
         const newSavedAmount = goal.savedAmount + amountToAdd;
@@ -121,104 +120,6 @@ export const createTransaction = async (req: Request, res: Response) => {
     await prisma.$disconnect();
   }
 };
-
-// update transaction
-// export const updateTransaction = async (req: Request, res: Response) => {
-//   const { id } = req.params;
-//   const { title, description, amount, type, category, number } = req.body;
-
-//   const token = req.header("authorization")?.split(" ")[1];
-
-//   if (!token) {
-//     return res.status(401).json({ message: "Unauthorized" });
-//   }
-
-//   const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
-//   const userId = (decoded as any).id;
-
-//   try {
-//     // Find transaction
-//     const transaction = await prisma.transactions.findFirst({
-//       where: { id, userId },
-//     });
-
-//     if (!transaction) {
-//       return res.status(404).json({
-//         message: "Transaction not found",
-//         success: false,
-//       });
-//     }
-
-//     // Update transaction
-//     const updatedTransaction = await prisma.transactions.update({
-//       where: { id },
-//       data: {
-//         title,
-//         description,
-//         amount,
-//         type,
-//         number,
-//         categoryId: category,
-//       },
-//     });
-
-//     // If the transaction type is INCOME, update all goals for the user
-//     // if (type === "INCOME") {
-//     //   const goals = await prisma.goal.findMany({ where: { userId } });
-//     //   let remainingAmount = amount;
-
-//     //   for (const goal of goals) {
-//     //     if (remainingAmount <= 0) break;
-
-//     //     const amountNeeded = goal.amount - goal.savedAmount;
-//     //     if (amountNeeded > 0) {
-//     //       const amountToAdd = Math.min(amountNeeded, remainingAmount);
-//     //       await prisma.goal.update({
-//     //         where: { id: goal.id },
-//     //         data: { savedAmount: goal.savedAmount + amountToAdd },
-//     //       });
-//     //       remainingAmount -= amountToAdd;
-//     //     }
-//     //   }
-//     // }
-
-//     // If the transaction type is INCOME, update all goals for the user
-//     if (type === "INCOME") {
-//       const goals = await prisma.goal.findMany({ where: { userId } });
-//       let remainingAmount = amount;
-
-//       for (const goal of goals) {
-//         if (remainingAmount <= 0) break;
-
-//         const amountNeeded = goal.amount - goal.savedAmount;
-//         if (amountNeeded > 0) {
-//           const amountToAdd = Math.min(amountNeeded, remainingAmount);
-
-//           await prisma.goal.update({
-//             where: { id: goal.id },
-//             data: { savedAmount: goal.savedAmount + amountToAdd },
-//           });
-//           remainingAmount -= amountToAdd;
-//         } else {
-//         }
-//       }
-//     }
-
-//     return res.json({
-//       success: true,
-//       message: "Transaction updated successfully",
-//       transaction: updatedTransaction,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       error: "Internal Server Error",
-//       success: false,
-//       message: "Transaction update failed",
-//     });
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// };
 
 export const updateTransaction = async (req: Request, res: Response) => {
   const { id } = req.params;

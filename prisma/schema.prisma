@@ -50,7 +50,7 @@ model Token {
 model Transactions {
   id          String          @id @default(auto()) @map("_id") @db.ObjectId
   title       String
-  description String?
+  description String?         @default("")
   amount      Float
   number      Int?
   type        TransactionType
@@ -137,7 +137,7 @@ model Budget {
   userId      String  @db.ObjectId
   leftToSpend Float   @default(0.0)
   isCompleted Boolean @default(false)
-  isEditted Boolean @default(false)
+  isEditted   Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

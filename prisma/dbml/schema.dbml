@@ -32,7 +32,7 @@ Table Token {
 Table Transactions {
   id String [pk]
   title String [not null]
-  description String
+  description String [default: '']
   amount Float [not null]
   number Int
   type TransactionType [not null]
