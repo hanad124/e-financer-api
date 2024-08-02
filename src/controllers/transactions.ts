@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { ImageUpload } from "../utils/upload";
 import getUserId from "../helpers/getUserId";
-// import { addJobToQueue } from "../utils/jobQueue";
 
 const prisma = new PrismaClient();
 
