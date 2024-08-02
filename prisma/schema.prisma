@@ -19,7 +19,7 @@ model User {
   name          String?
   password      String
   isVarified    Boolean @default(false)
-  avatar        String? @default("https://avatars.githubusercontent.com/u/77287775?v=4")
+  avatar        String? @default("https://t3.ftcdn.net/jpg/06/33/54/78/360_F_633547842_AugYzexTpMJ9z1YcpTKUBoqBF0CUCk10.jpg")
   description   String?
   expoPushToken String?
 

@@ -108,7 +108,7 @@ const sendEmail = async ({
         subject: "Verify Your Email Address",
         html: emailContent,
       };
-    } else if (emailType == "forgotpassword") {
+    } else if (emailType == "resetpassword") {
       emailContent = `
       <div style="font-family: Arial, sans-serif; background-color: #f8f8f8">
       <div

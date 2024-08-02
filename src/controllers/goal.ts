@@ -16,7 +16,6 @@ export const createGoal = async (req: Request, res: Response) => {
         name,
         amount,
         targetDate: new Date(targetDate),
-
         // use default icon in the database if icon is not provided
         icon:
           icon ||

@@ -48,12 +48,12 @@ export const createTransaction = async (req: Request, res: Response) => {
       },
     });
 
+    console.log("budgetId", budgetId);
+
     if (budget && budgetId !== undefined) {
       let updatedLeftToSpend = budget.leftToSpend;
 
-      if (type === "INCOME") {
-        updatedLeftToSpend += amount;
-      } else if (type === "EXPENSE") {
+      if (type === "EXPENSE") {
         if (amount > updatedLeftToSpend) {
           console.log("expense amount::", amount);
           return;

@@ -36,6 +36,8 @@ const register = async (req: Request, res: Response) => {
         email,
         password: hashedPassword,
         name,
+        avatar:
+          "https://t3.ftcdn.net/jpg/06/33/54/78/360_F_633547842_AugYzexTpMJ9z1YcpTKUBoqBF0CUCk10.jpg",
       },
     });
 
@@ -271,6 +273,8 @@ const sendPasswordResetLink = async (req: Request, res: Response) => {
         .status(404)
         .json({ succuess: false, message: "User not found!" });
     }
+
+    console.log("--user--", user);
 
     await sendEmail({
       user: user,
@@ -558,7 +562,7 @@ const savePushToken = async (req: Request, res: Response) => {
         id: userId,
       },
       data: {
-        expoPushToken,
+        expoPushToken: expoPushToken as string,
       },
     });
 
