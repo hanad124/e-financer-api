@@ -15,6 +15,8 @@ export const createCategory = async (req: Request, res: Response) => {
       where: { name, userId: userid },
     });
 
+    console.log("existingCategory: ", existingCategory);
+
     if (existingCategory) {
       return res
         .status(400)
@@ -131,8 +133,8 @@ export const getCategories = async (req: Request, res: Response) => {
         .json({ success: false, message: "User is required" });
     }
 
-    const { page = 1, limit = 10 } = req.query;
-    const skip = (Number(page) - 1) * Number(limit);
+    // const { page = 1, limit = 10 } = req.query;
+    // const skip = (Number(page) - 1) * Number(limit);
 
     const categories = await prisma.category.findMany({
       where: { userId: userId },
@@ -144,8 +146,8 @@ export const getCategories = async (req: Request, res: Response) => {
           select: { transactions: true },
         },
       },
-      skip: skip,
-      take: Number(limit),
+      // skip: skip,
+      // take: Number(limit),
     });
 
     // if (categories.length === 0) {
