@@ -415,7 +415,6 @@ const updatePassword = async (req: Request, res: Response) => {
 const updateProfile = async (req: Request, res: Response) => {
   const { name, avatar, description } = req.body;
 
-  console.log("req.body", req.body);
   const token = req.header("authorization")?.split(" ")[1];
 
   // decode token
@@ -464,7 +463,7 @@ const updateProfile = async (req: Request, res: Response) => {
     console.error(error);
     return res
       .status(500)
-      .json({ success: false, message: "Internal server error" });
+      .json({ success: false, message: `Internal server error: ${error}` });
   } finally {
     await prisma.$disconnect();
   }
