@@ -72,7 +72,7 @@ model Transactions {
 
 model Category {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String   @unique
+  name      String  
   iconId    String   @db.ObjectId
   userId    String   @db.ObjectId
   createdAt DateTime @default(now())

@@ -33,6 +33,6 @@ export const ImageUpload = async (base64Image: string) => {
       throw new Error(error.message);
     }
     console.error("Error uploading", error);
-    throw new Error("Image upload failed");
+    throw new Error(`Image upload failed: ${error}`);
   }
 };

@@ -15,12 +15,10 @@ export const createCategory = async (req: Request, res: Response) => {
       where: { name, userId: userid },
     });
 
-    console.log("existingCategory: ", existingCategory);
-
     if (existingCategory) {
       return res
         .status(400)
-        .json({ message: "Category already exists", success: false });
+        .json({ message: "Category already exists for this user", success: false });
     }
 
     const category = await prisma.category.create({
@@ -29,13 +27,13 @@ export const createCategory = async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      message: "Category created successfully",
+      message: "Category created successfully for the current user",
       category,
     });
   } catch (error) {
-    console.log("category errerror: ", error);
+    console.error("Error creating category:", error);
     return res.status(500).json({
-      error: `Internal Server Error, ${error}`,
+      error: "Internal Server Error",
       success: false,
       message: "Category creation failed",
     });
@@ -133,9 +131,6 @@ export const getCategories = async (req: Request, res: Response) => {
         .json({ success: false, message: "User is required" });
     }
 
-    // const { page = 1, limit = 10 } = req.query;
-    // const skip = (Number(page) - 1) * Number(limit);
-
     const categories = await prisma.category.findMany({
       where: { userId: userId },
       select: {
@@ -146,13 +141,7 @@ export const getCategories = async (req: Request, res: Response) => {
           select: { transactions: true },
         },
       },
-      // skip: skip,
-      // take: Number(limit),
     });
-
-    // if (categories.length === 0) {
-    //   return res.json({ success: true, message: "No categories found" });
-    // }
 
     const categoriesWithTransactionCount = categories.map((category: any) => ({
       ...category,

@@ -50,7 +50,7 @@ Table Transactions {
 
 Table Category {
   id String [pk]
-  name String [unique, not null]
+  name String [not null]
   iconId String [not null]
   userId String [not null]
   createdAt DateTime [default: `now()`, not null]
