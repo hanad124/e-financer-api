@@ -211,12 +211,11 @@ const verifyOTP = async (req: Request, res: Response) => {
     // compare the otp
     // const isOTPValid = await bcrypt.compare(otp, user.password);
 
-
     const user = await prisma.user.findFirst({
       where: {
         otps: {
           some: {
-            otp
+            otp: otp as string,
           },
         },
       },
@@ -236,7 +235,7 @@ const verifyOTP = async (req: Request, res: Response) => {
         id: user.id,
       },
       data: {
-        isVarified: true, 
+        isVarified: true,
       },
     });
 
