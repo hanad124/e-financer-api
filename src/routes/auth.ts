@@ -5,7 +5,7 @@ import {
   login,
   getUserById,
   verifyEmailLink,
-  verifyEmail,
+  verifyOTP,
   sendPasswordResetLink,
   resetPassword,
   updatePassword,
@@ -23,7 +23,7 @@ authRouter.get("/users/:id", isAuthenticated, isOwner, getUserById);
 authRouter.post("/register", register);
 authRouter.post("/login", login);
 authRouter.post("/verify-email-link", verifyEmailLink);
-authRouter.post("/verifyemail", verifyEmail);
+authRouter.post("/verify-otp", verifyOTP);
 authRouter.get("/user-info", isAuthenticated, getUserInfo);
 authRouter.post("/send-password-reset-link", sendPasswordResetLink);
 authRouter.post("/reset-password", resetPassword);

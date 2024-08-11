@@ -27,7 +27,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   // relation
-  tokens       Token[]
+  otps         OTP[]
   transactions Transactions[]
   categories   Category[]
   budgets      Budget[]
@@ -35,12 +35,13 @@ model User {
 }
 
 // token model
-model Token {
+model OTP {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  token     String   @unique
+  otp       String   @unique
   userId    String   @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  expiresAt DateTime
 
   // relation
   user User @relation(fields: [userId], references: [id])
@@ -72,7 +73,7 @@ model Transactions {
 
 model Category {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String  
+  name      String
   iconId    String   @db.ObjectId
   userId    String   @db.ObjectId
   createdAt DateTime @default(now())

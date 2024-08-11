@@ -202,26 +202,32 @@ const verifyEmailLink = async (req: Request, res: Response) => {
   }
 };
 
-const verifyEmail = async (req: Request, res: Response) => {
-  const { token } = req.body;
+const verifyOTP = async (req: Request, res: Response) => {
+  const { otp } = req.body;
 
-  console.log("token", token);
+  console.log("otp", otp);
 
   try {
+    // compare the otp
+    // const isOTPValid = await bcrypt.compare(otp, user.password);
+
+
     const user = await prisma.user.findFirst({
       where: {
-        tokens: {
+        otps: {
           some: {
-            token,
+            otp
           },
         },
       },
     });
 
+    console.log("user", user);
+
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "Invalid token!",
+        message: "Invalid OTP!",
       });
     }
 
@@ -230,12 +236,12 @@ const verifyEmail = async (req: Request, res: Response) => {
         id: user.id,
       },
       data: {
-        isVarified: true, // Corrected spelling
+        isVarified: true, 
       },
     });
 
-    // Delete token
-    await prisma.token.deleteMany({
+    // Delete OTP
+    await prisma.oTP.deleteMany({
       where: {
         userId: user.id,
       },
@@ -296,20 +302,23 @@ const sendPasswordResetLink = async (req: Request, res: Response) => {
 
 // reset password
 const resetPassword = async (req: Request, res: Response) => {
-  const { token, password } = req.body;
+  const { otp, password } = req.body;
 
-  if (!token || !password) {
+  if (!otp || !password) {
     return res
       .status(400)
-      .json({ success: false, message: "Token and password are required!" });
+      .json({ success: false, message: "OTP and password are required!" });
   }
 
   try {
     const user = await prisma.user.findFirst({
       where: {
-        tokens: {
+        otps: {
           some: {
-            token,
+            otp,
+            expiresAt: {
+              gt: new Date(),
+            },
           },
         },
       },
@@ -327,8 +336,8 @@ const resetPassword = async (req: Request, res: Response) => {
         },
       });
 
-      // delete token
-      await prisma.token.deleteMany({
+      // delete OTP
+      await prisma.oTP.deleteMany({
         where: {
           userId: user.id,
         },
@@ -341,10 +350,11 @@ const resetPassword = async (req: Request, res: Response) => {
     } else {
       return res.status(404).json({
         success: false,
-        message: "Invalid token!",
+        message: "Invalid or expired OTP!",
       });
     }
   } catch (error) {
+    console.error("Error resetting password:", error);
     return res.status(500).json({ message: "Internal server error" });
   } finally {
     await prisma.$disconnect();
@@ -581,7 +591,7 @@ export {
   getUserById,
   login,
   verifyEmailLink,
-  verifyEmail,
+  verifyOTP,
   sendPasswordResetLink,
   resetPassword,
   updatePassword,
