@@ -30,7 +30,7 @@ const sendEmail = async ({
 
     await prisma.oTP.create({
       data: {
-        otp: otp,
+        otp: otp as string,
         userId: user.id,
         expiresAt: new Date(Date.now() + 10 * 60 * 1000),
       },
