@@ -149,7 +149,7 @@ model Budget {
   Icon         Icon?          @relation(fields: [iconId], references: [id])
   iconId       String?        @db.ObjectId
 
-  @@unique([name, userId]) // A user can't have duplicate budget names
+  @@unique([name, userId]) 
 }
 
 enum TransactionType {
