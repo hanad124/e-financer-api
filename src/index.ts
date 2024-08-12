@@ -12,6 +12,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Define the client URL for CORS
+
 // const CLIENT_URL = "http://localhost:5173";
 const CLIENT_URL = "https://expense-tracker-client-funs.onrender.com";
 // Apply CORS middleware
